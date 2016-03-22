@@ -1,17 +1,13 @@
+image::logo.png[]
 = Chronix Spark
-An integration of Chronix into Spark providing a TimeseriesRDD implementation.
+An Apache Spark `TimeseriesRDD` implementation based
+ on Chronix.
 
 == Design Principles
- * A TimeseriesRDD is a collection of univariant time series. Each of them has its own
- vector of timestamps - they are not aligned on one common vector of timestamps.
- * All operations on TimeseriesRDD are transformations. Actions can only
- be performed by transforming a TimeseriesRDD into a common RDD. All transformations on
- a TimeseriesRDD are performed lazy and distributed.
- * Time series are multi-dimensional. Each time series is associated to
- one or more dimensions. The identity of a time series is the combination
- of all its dimension values.
- * TimeseriesRDD has its own storage engine based on Solr Cloud and the Chronix format.
- So the time series data is stored storage-efficient, sharded and with low-level queries
+* A `TimeseriesRDD` is a collection of univariant time series. Each of them has its own vector of timestamps - they are not aligned on one common vector of timestamps.
+* All operations on `TimeseriesRDD` are transformations. Actions can only be performed by transforming a `TimeseriesRDD` into a common RDD. All transformations on a `TimeseriesRDD` are performed lazy and distributed.
+* Time series are multi-dimensional. Each time series is associated to one or more dimensions. The identity of a time series is the combination of all its dimension values.
+* `TimeseriesRDD` has its own storage engine based on Solr Cloud and the Chronix format. So the time series data is stored storage-efficient, sharded and with low-level queries
  to perform predicate pushdown.
 
 == FAQ
@@ -34,6 +30,6 @@ Chronix provides multi-dimensional time series.
  * Allow non-float values
  * Performance improvements by enhanced predicate pushdowns
  * Provide transformations to DataFrames and DataSets
- * Provide bidi transformations to/from Spark-TS TimeseriesRDD
+ * Provide bidi-transformations to/from Spark-TS' `TimeseriesRDD`
  * Migrate to Spark 2.0
  * Incorporate alien technology
