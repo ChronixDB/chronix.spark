@@ -1,0 +1,39 @@
+= Chronix Spark
+An integration of Chronix into Spark providing a TimeseriesRDD implementation.
+
+== Design Principles
+ * A TimeseriesRDD is a collection of univariant time series. Each of them has its own
+ vector of timestamps - they are not aligned on one common vector of timestamps.
+ * All operations on TimeseriesRDD are transformations. Actions can only
+ be performed by transforming a TimeseriesRDD into a common RDD. All transformations on
+ a TimeseriesRDD are performed lazy and distributed.
+ * Time series are multi-dimensional. Each time series is associated to
+ one or more dimensions. The identity of a time series is the combination
+ of all its dimension values.
+ * TimeseriesRDD has its own storage engine based on Solr Cloud and the Chronix format.
+ So the time series data is stored storage-efficient, sharded and with low-level queries
+ to perform predicate pushdown.
+
+== FAQ
+
+**How does Chronix Spark compare to Spark-TS?**
+
+Spark-TS provides no specific time series storage
+it uses the Spark persistence mechanisms instead. That leads
+to a less efficient storage usage and less possibilities to
+perform performance optimizations via predicate pushdown.
+
+In contrast to Spark-TS Chronix does not align all
+time series values on one vector of timestamps. That leads to
+greater flexibility in time series aggregation.
+
+Chronix provides multi-dimensional time series.
+
+
+== Roadmap
+ * Allow non-float values
+ * Performance improvements by enhanced predicate pushdowns
+ * Provide transformations to DataFrames and DataSets
+ * Provide bidi transformations to/from Spark-TS TimeseriesRDD
+ * Migrate to Spark 2.0
+ * Incorporate alien technology
