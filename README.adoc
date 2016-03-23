@@ -1,3 +1,5 @@
+image:https://travis-ci.org/ChronixDB/chronix.spark.svg?branch=master["Build Status", link="https://travis-ci.org/ChronixDB/chronix.spark"]
+
 image::logo.png[]
 = Chronix Spark
 An Apache Spark `TimeseriesRDD` implementation based
