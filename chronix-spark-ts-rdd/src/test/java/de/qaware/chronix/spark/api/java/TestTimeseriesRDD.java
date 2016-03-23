@@ -13,21 +13,19 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-/**
- * _____________________________________________________________________________
- * Project   : Chronix Spark
- * License   : Apache License 2.0 (https://opensource.org/licenses/Apache-2.0)
- * Designed and handcrafted in Germany, (c) 2016 QAware GmbH
- * _____________________________________________________________________________
- */
 package de.qaware.chronix.spark.api.java;
 
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Test;
 
 public class TestTimeseriesRDD {
 
     @Test
     public void testConstructor() {
-        TimeseriesRDD tsRdd = new TimeseriesRDD();
+        SparkConf conf = new SparkConf().setMaster("local[2]").setAppName("Spark Chronix");
+        try(JavaSparkContext sc = new JavaSparkContext(conf)) {
+            System.out.println(new TimeseriesRDD(sc.sc()).toJavaRDD().collect());
+        }
     }
 }
