@@ -13,6 +13,6 @@ public class TestTimeseriesRDD {
 
     @Test
     public void testConstructor() {
-        TimeseriesRDD tsRdd = new TimeseriesRDD();
+        TimeseriesRDD tsRdd = new TimeseriesRDD(null);
     }
 }
