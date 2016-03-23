@@ -1,3 +1,7 @@
+image:https://travis-ci.org/ChronixDB/chronix.spark.svg?branch=master["Build Status", link="https://travis-ci.org/ChronixDB/chronix.spark"]
+image:https://coveralls.io/repos/github/ChronixDB/chronix.spark/badge.svg?branch=master["Coverage",link="https://coveralls.io/github/ChronixDB/chronix.spark?branch=master"]
+image:http://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2",link="https://github.com/ChronixDB/chronix.spark/blob/master/LICENSE")]
+
 image::logo.png[]
 = Chronix Spark
 An Apache Spark `TimeseriesRDD` implementation based
