@@ -19,13 +19,13 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Test;
 
-public class TestTimeseriesRDD {
+public class TestTimeSeriesRDD {
 
     @Test
     public void testConstructor() {
         SparkConf conf = new SparkConf().setMaster("local[2]").setAppName("Spark Chronix");
         try(JavaSparkContext sc = new JavaSparkContext(conf)) {
-            System.out.println(new TimeseriesRDD(sc.sc()).toJavaRDD().collect());
+            System.out.println(new TimeSeriesRDD(sc.sc()).toJavaRDD().collect());
         }
     }
 }

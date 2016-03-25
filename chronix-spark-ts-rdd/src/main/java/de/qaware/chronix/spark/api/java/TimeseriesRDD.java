@@ -26,14 +26,16 @@ import scala.reflect.ClassManifestFactory$;
 import scala.reflect.ClassTag;
 
 /**
- * TimeseriesRDD implementation based on Chronix.
+ * TimeSeriesRDD implementation based on Chronix.
+ *
+ * TODO: JavaPairRDD<JavaRDD<Long>, JavaRDD<Float>>
  */
-public class TimeseriesRDD extends RDD<Float> {
+public class TimeSeriesRDD extends RDD<Float> {
     private static final long serialVersionUID = 1L;
 
     private static final ClassTag<Float> FLOAT_TAG = ClassManifestFactory$.MODULE$.fromClass(Float.class);
 
-    public TimeseriesRDD(SparkContext sc) {
+    public TimeSeriesRDD(SparkContext sc) {
         super(sc, new ArrayBuffer<Dependency<?>>(), FLOAT_TAG);
     }
 
@@ -45,5 +47,14 @@ public class TimeseriesRDD extends RDD<Float> {
     @Override
     public Partition[] getPartitions() {
         return new Partition[0];
+    }
+
+    /**
+     * Action to get all time series as plain java datatype.
+     *
+     * @return in-memory representation of all contained time series
+     */
+    public MultiTimeSeries toTimeSeries() {
+        return MultiTimeSeries.empty();
     }
 }
