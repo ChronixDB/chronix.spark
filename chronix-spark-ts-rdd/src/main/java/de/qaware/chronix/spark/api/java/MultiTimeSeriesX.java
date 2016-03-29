@@ -28,11 +28,11 @@ import java.util.List;
  * for the timestamp vector and datatype Float for
  * the value vector.
  */
-public class MultiTimeSeries {
+public class MultiTimeSeriesX {
 
     private List<TimeSeries<Long, Float>> ts;
 
-    public MultiTimeSeries(List<TimeSeries<Long, Float>> ts){
+    public MultiTimeSeriesX(List<TimeSeries<Long, Float>> ts){
         this.ts = Lists.newCopyOnWriteArrayList(ts);
     }
 
@@ -40,8 +40,8 @@ public class MultiTimeSeries {
         return Lists.newCopyOnWriteArrayList(ts);
     }
 
-    public static MultiTimeSeries empty() {
-        return new MultiTimeSeries(Collections.emptyList());
+    public static MultiTimeSeriesX empty() {
+        return new MultiTimeSeriesX(Collections.emptyList());
     }
 
 }
