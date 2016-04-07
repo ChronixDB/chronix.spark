@@ -85,7 +85,9 @@ public class KassiopeiaTimeSeriesConverter implements TimeSeriesConverter<TimeSe
         ProtocolBuffer.Points.Builder builder = ProtocolBuffer.Points.newBuilder();
         ProtocolBuffer.Point.Builder pointBuilder = ProtocolBuffer.Point.newBuilder();
         for (Pair<Long, Double> point : document) {
-            builder.addPoints(pointBuilder.setDate(point.getFirst()).setValue(point.getSecond()));
+            if (point.getFirst() != null) {
+                builder.addPoints(pointBuilder.setDate(point.getFirst()).setValue(point.getSecond()));
+            }
         }
 
         //add the data field to the binary time series

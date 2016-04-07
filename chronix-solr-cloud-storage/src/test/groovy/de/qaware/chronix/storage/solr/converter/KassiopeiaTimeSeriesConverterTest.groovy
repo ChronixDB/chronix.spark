@@ -30,18 +30,25 @@ class KassiopeiaTimeSeriesConverterTest extends Specification {
 
     def "test convert kassiopeia time series"() {
         given:
+        def start = new Date();
+        def end = new Date()
         def binaryTS = new BinaryTimeSeries.Builder()
                 .field("test", 6d)
                 .field(Schema.DATA, compressedData())
-                .field(Schema.END, new Date())
-                .field(Schema.START, new Date())
+                .field(Schema.END, end)
+                .field(Schema.START, start)
                 .build()
 
-        when:
-        def timeSeries = new KassiopeiaTimeSeriesConverter().from(binaryTS, 0, 0)
+        def converter = new KassiopeiaTimeSeriesConverter()
 
+        when:
+        def timeSeries = converter.from(binaryTS, 0, 0)
+        def testedTs = converter.to(timeSeries)
         then:
         timeSeries.size() == 11
+        testedTs.get("test") == 6d
+        testedTs.get(Schema.END) == end.time
+        testedTs.get(Schema.START) == start.time
     }
 
     String compressedData() {
