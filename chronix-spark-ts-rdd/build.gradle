@@ -5,10 +5,12 @@ sonarqube {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile 'org.apache.spark:spark-core_2.10:1.6.1'
     compile 'org.apache.solr:solr-solrj:5.4.1'
     compile project(':chronix-solr-cloud-storage')
+
+    compileOnly 'org.apache.spark:spark-core_2.10:1.6.1'
+
+    testCompile 'org.apache.spark:spark-core_2.10:1.6.1'
 }
 
 
@@ -136,6 +138,16 @@ pluginBundle {
             description = project.description
             tags = ['chronix', 'time series database', 'spark', "rdd"]
             version = project.version
+        }
+    }
+}
+
+//Build a fat jar that can loaded into spark
+jar {
+    dependsOn configurations.runtime
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
         }
     }
 }

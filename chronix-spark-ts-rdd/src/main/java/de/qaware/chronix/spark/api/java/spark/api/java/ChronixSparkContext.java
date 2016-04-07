@@ -13,10 +13,10 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package de.qaware.chronix.spark.api.java;
+package de.qaware.chronix.spark.api.java.spark.api.java;
 
-import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
-import de.qaware.chronix.spark.api.java.util.StreamingResultsIterator;
+import de.qaware.chronix.spark.api.java.spark.api.java.util.SolrCloudUtil;
+import de.qaware.chronix.spark.api.java.spark.api.java.util.StreamingResultsIterator;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.storage.solr.converter.MetricTimeSeriesConverter;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
