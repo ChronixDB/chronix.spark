@@ -16,14 +16,10 @@
 package de.qaware.chronix.storage.solr
 
 import de.qaware.chronix.storage.solr.converter.SoftwareEKGConverter
-import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.impl.CloudSolrClient
-import spock.lang.Shared
 import spock.lang.Specification
 
-import java.util.function.BinaryOperator
-import java.util.function.Function
 import java.util.stream.Collectors
 
 /**
@@ -32,25 +28,9 @@ import java.util.stream.Collectors
  */
 class SolrCloudStorageTestIT extends Specification {
 
-    @Shared
-    Function<MetricTimeSeries, String> groupBy = new Function<MetricTimeSeries, String>() {
-        @Override
-        String apply(MetricTimeSeries metricTimeSeries) {
-            return metricTimeSeries.getMetric();
-        }
-    }
-
-    @Shared
-    BinaryOperator<MetricTimeSeries> reduce = new BinaryOperator<MetricTimeSeries>() {
-        @Override
-        MetricTimeSeries apply(MetricTimeSeries ts1, MetricTimeSeries ts2) {
-            return ts1.addAll(ts2.getTimestampsAsArray(), ts2.getValuesAsArray());
-        }
-    }
-
     def "test can connect to solr cloud"() {
         given:
-        def solrCloudStorage = new ChronixSolrCloudStorage(200, groupBy, reduce)
+        def solrCloudStorage = new ChronixSolrCloudStorage(200)
         def converter = new SoftwareEKGConverter()
         def connection = new CloudSolrClient("192.168.1.100:2181")
         connection.setDefaultCollection("ekgdata")

@@ -26,12 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static java.util.stream.Collectors.groupingBy;
 
 /**
  * @param <T> the type defining the returned type
@@ -40,20 +36,15 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChronixSolrCloudStorage.class);
     private final int nrOfDocumentPerBatch;
-    private final BinaryOperator<T> reduce;
-    private final Function<T, String> groupBy;
+
 
     /**
      * Constructs a Chronix storage that is based on an apache solr cloud.
      *
      * @param nrOfDocumentPerBatch number of documents that are processed in one batch
-     * @param groupBy              the function to group time series records
-     * @param reduce               the function to reduce the grouped time series records into one time series
      */
-    public ChronixSolrCloudStorage(final int nrOfDocumentPerBatch, final Function<T, String> groupBy, final BinaryOperator<T> reduce) {
+    public ChronixSolrCloudStorage(final int nrOfDocumentPerBatch) {
         this.nrOfDocumentPerBatch = nrOfDocumentPerBatch;
-        this.groupBy = groupBy;
-        this.reduce = reduce;
     }
 
     @Override
@@ -61,10 +52,7 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
         LOGGER.debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
         SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
 
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false)
-                .filter(t -> t != null)//Remove empty results
-                .collect(groupingBy((Function<T, String>) groupBy::apply)).values().stream()
-                .map(ts -> ts.stream().reduce(reduce).get());
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
     }
 
 
