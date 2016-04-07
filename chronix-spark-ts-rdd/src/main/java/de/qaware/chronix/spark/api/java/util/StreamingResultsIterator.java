@@ -15,7 +15,6 @@
  */
 package de.qaware.chronix.spark.api.java.util;
 
-import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
