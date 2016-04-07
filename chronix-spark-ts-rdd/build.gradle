@@ -8,7 +8,7 @@ dependencies {
     compile 'org.apache.solr:solr-solrj:5.4.1'
     compile project(':chronix-solr-cloud-storage')
 
-    compile 'org.apache.spark:spark-core_2.10:1.6.1'
+    compileOnly 'org.apache.spark:spark-core_2.10:1.6.1'
 
     testCompile 'org.apache.spark:spark-core_2.10:1.6.1'
 }

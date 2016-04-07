@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package de.qaware.chronix.spark.api.java.spark.api.java;
+package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.spark.api.java.JavaRDD;
