@@ -15,7 +15,7 @@
  */
 package de.qaware.chronix.storage.solr
 
-import de.qaware.chronix.storage.solr.converter.SoftwareEKGConverter
+import de.qaware.chronix.storage.solr.converter.MetricTimeSeriesConverter
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.impl.CloudSolrClient
 import spock.lang.Ignore
@@ -33,7 +33,7 @@ class SolrCloudStorageTestIT extends Specification {
     def "test can connect to solr cloud"() {
         given:
         def solrCloudStorage = new ChronixSolrCloudStorage(200)
-        def converter = new SoftwareEKGConverter()
+        def converter = new MetricTimeSeriesConverter()
         def connection = new CloudSolrClient("192.168.1.100:2181")
         connection.setDefaultCollection("ekgdata")
         def query = new SolrQuery("metric:\"MXBean(com.bea:Name=SDWHDataSource,ServerRuntime=i1_lpswl11,Type=JDBCDataSourceRuntime).PrepStmtCacheMissCount\"");

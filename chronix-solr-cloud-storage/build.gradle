@@ -5,7 +5,7 @@ dependencies {
     compile 'de.qaware.chronix:chronix-api:0.1'
 
     compile 'com.google.protobuf:protobuf-java:2.5.0'
-    compile 'de.qaware.chronix:chronix-kassiopeia-simple:0.1.7'
+    compile 'de.qaware.chronix:chronix-kassiopeia-simple:0.1.8-beta-1'
 }
 
 //add the generated classes to the sources

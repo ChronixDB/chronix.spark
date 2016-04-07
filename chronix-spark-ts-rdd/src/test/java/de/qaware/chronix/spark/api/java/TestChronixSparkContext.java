@@ -18,40 +18,48 @@ package de.qaware.chronix.spark.api.java;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocument;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import java.util.List;
 import static de.qaware.chronix.spark.api.java.TestConfiguration.APP_NAME;
 import static de.qaware.chronix.spark.api.java.TestConfiguration.SPARK_MASTER;
 import static de.qaware.chronix.spark.api.java.TestConfiguration.ZK_HOST;
-import static org.junit.Assert.assertTrue;
 
-import java.util.Iterator;
-import java.util.List;
-
-public class TestChronixRDD {
+public class TestChronixSparkContext {
 
     @Ignore
     @Test
-    public void testConstructor() {
-        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD");
-        ChronixRDD rdd = createRdd(query);
-        Iterator<MetricTimeSeries> it = rdd.iterator();
-        int i = 0;
-        while(it.hasNext()) {
-            it.next();
-            i++;
-        }
-        assertTrue(i > 0);
-    }
-
-    public ChronixRDD createRdd(SolrQuery query) {
+    public void testSolrQuery() {
         SparkConf conf = new SparkConf().setMaster(SPARK_MASTER).setAppName(APP_NAME);
         try(JavaSparkContext sc = new JavaSparkContext(conf)) {
             ChronixSparkContext csc = new ChronixSparkContext(sc);
-            return csc.queryChronix(query, ZK_HOST);
+            SolrQuery query = new SolrQuery("logMessage:*570*");
+            JavaRDD<SolrDocument> result = csc.querySolr(query, ZK_HOST);
+            List<SolrDocument> docs = result.take(1);
+            Assert.assertTrue(docs.size() == 1);
+        } catch (SolrServerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testChronixQuery() {
+        SparkConf conf = new SparkConf().setMaster(SPARK_MASTER).setAppName(APP_NAME);
+        try(JavaSparkContext sc = new JavaSparkContext(conf)) {
+            ChronixSparkContext csc = new ChronixSparkContext(sc);
+            SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD");
+            ChronixRDD result = csc.queryChronix(query, ZK_HOST);
+            List<MetricTimeSeries> timeSeries = result.take(5);
+            Assert.assertTrue(timeSeries.size() == 5);
+            for (MetricTimeSeries ts : timeSeries) {
+                System.out.println(ts.toString());
+            }
         } catch (SolrServerException e) {
             throw new RuntimeException(e);
         }

@@ -32,9 +32,9 @@ import java.util.zip.GZIPInputStream;
 /**
  *
  */
-public class SoftwareEKGConverter implements TimeSeriesConverter<MetricTimeSeries> {
+public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTimeSeries> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SoftwareEKGConverter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesConverter.class);
     public static final String METRIC = "metric";
 
     @Override

@@ -18,10 +18,12 @@ package de.qaware.chronix.storage.solr;
 import de.qaware.chronix.converter.TimeSeriesConverter;
 import de.qaware.chronix.storage.solr.stream.SolrStreamingService;
 import de.qaware.chronix.streaming.StorageService;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 import java.util.Spliterator;
@@ -55,11 +57,24 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
     }
 
+    /**
+     * Fetches a stream of time series only from a single node.
+     *
+     * @param converter
+     * @param connection
+     * @param query
+     * @return
+     */
+    public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, SolrClient connection, SolrQuery query) {
+        LOGGER.debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
+        SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
+
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
+    }
+
 
     @Override
     public boolean add(TimeSeriesConverter<T> converter, Collection<T> documents, CloudSolrClient connection) {
-        //TODO: Implement
-        //Read only.
-        return true;
+        throw new NotImplementedException();
     }
 }

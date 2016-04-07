@@ -31,6 +31,7 @@ Chronix provides multi-dimensional time series.
 
 == Roadmap
  * Allow non-float values
+ * Provide data locality in `ChronixSparkContext`
  * Performance improvements by enhanced predicate pushdowns
  * Provide transformations to DataFrames and DataSets
  * Provide bidi-transformations to/from Spark-TS' `TimeseriesRDD`
