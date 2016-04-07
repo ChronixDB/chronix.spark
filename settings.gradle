@@ -1,3 +1,4 @@
 rootProject.name = 'chronix.spark'
 include 'chronix-spark-ts-rdd'
+include 'chronix-solr-cloud-storage'
 
