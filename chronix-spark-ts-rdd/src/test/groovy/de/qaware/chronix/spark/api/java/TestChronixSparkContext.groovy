@@ -44,6 +44,7 @@ class TestChronixSparkContext extends Specification {
     }
 
 
+    @Ignore
     def "testChronixQuery"() {
         SparkConf conf = new SparkConf().setMaster(TestConfiguration.SPARK_MASTER).setAppName(TestConfiguration.APP_NAME)
         JavaSparkContext sc = new JavaSparkContext(conf)
