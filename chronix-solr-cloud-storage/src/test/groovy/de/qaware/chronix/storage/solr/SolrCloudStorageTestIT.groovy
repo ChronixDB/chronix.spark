@@ -18,6 +18,7 @@ package de.qaware.chronix.storage.solr
 import de.qaware.chronix.storage.solr.converter.SoftwareEKGConverter
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.impl.CloudSolrClient
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.util.stream.Collectors
@@ -28,6 +29,7 @@ import java.util.stream.Collectors
  */
 class SolrCloudStorageTestIT extends Specification {
 
+    @Ignore
     def "test can connect to solr cloud"() {
         given:
         def solrCloudStorage = new ChronixSolrCloudStorage(200)
