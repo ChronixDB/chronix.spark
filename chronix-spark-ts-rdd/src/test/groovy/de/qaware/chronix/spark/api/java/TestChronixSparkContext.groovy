@@ -40,6 +40,8 @@ class TestChronixSparkContext extends Specification {
         then:
         List<SolrDocument> docs = result.take(1)
         docs.size() == 1
+        cleanup:
+        sc.close()
     }
 
     @Ignore
@@ -49,8 +51,10 @@ class TestChronixSparkContext extends Specification {
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD")
+
         when:
         ChronixRDD result = csc.queryChronix(query, TestConfiguration.ZK_HOST)
+        then:
         List<MetricTimeSeries> timeSeries = result.take(5)
 
         then:
@@ -58,5 +62,26 @@ class TestChronixSparkContext extends Specification {
         for (MetricTimeSeries ts : timeSeries) {
             System.out.println(ts.toString());
         }
+        cleanup:
+        sc.close()
+    }
+
+    def "testQuery"() {
+        given:
+        SparkConf conf = new SparkConf().setMaster(TestConfiguration.SPARK_MASTER).setAppName(TestConfiguration.APP_NAME)
+        JavaSparkContext sc = new JavaSparkContext(conf)
+        ChronixSparkContext csc = new ChronixSparkContext(sc);
+        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD AND host:lpswl10 AND process:wls1")
+        when:
+        ChronixRDD resultChunked = csc.queryChronix(query, TestConfiguration.ZK_HOST)
+        ChronixRDD result = csc.query(query, TestConfiguration.ZK_HOST)
+        then:
+        long chunked = resultChunked.count()
+        long joined = result.count()
+        Assert.assertTrue(resultChunked.count() > result.count())
+        println "Chunked: " + chunked
+        println "Joined: " + joined
+        cleanup:
+        sc.close()
     }
 }
