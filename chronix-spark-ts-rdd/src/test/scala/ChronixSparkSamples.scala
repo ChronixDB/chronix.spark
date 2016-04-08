@@ -1,5 +1,5 @@
-import de.qaware.chronix.spark.api.java.TestConfiguration._
 import de.qaware.chronix.spark.api.java.ChronixSparkContext
+import de.qaware.chronix.spark.api.java.TestConfiguration._
 import org.apache.solr.client.solrj.{SolrQuery, SolrServerException}
 import org.apache.spark.SparkConf
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}

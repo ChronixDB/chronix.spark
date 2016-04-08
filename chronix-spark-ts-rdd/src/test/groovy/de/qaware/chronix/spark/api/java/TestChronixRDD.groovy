@@ -24,7 +24,6 @@ import spock.lang.Specification
 
 class TestChronixRDD extends Specification {
 
-
     @Ignore
     def "test constructor"() {
         given:
