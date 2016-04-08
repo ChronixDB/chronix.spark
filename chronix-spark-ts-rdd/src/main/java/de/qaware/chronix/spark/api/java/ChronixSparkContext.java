@@ -24,9 +24,11 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.common.SolrDocument;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import scala.Tuple2;
 
 import java.io.Serializable;
 import java.util.List;
@@ -120,12 +122,38 @@ public class ChronixSparkContext implements Serializable {
         return new ChronixRDD(docs);
     }
 
-    /**
-     *
-     * @return a bunch of time series test data
-     */
-    public ChronixRDD getTimeSeriesTestData(){
-        return null;
+    public ChronixRDD query(
+            final SolrQuery query,
+            final String zkHost) throws SolrServerException {
+
+        ChronixRDD rootRdd = queryChronix(query, zkHost);
+
+        JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
+                = rootRdd.groupBy((MetricTimeSeries mts) -> {
+                return new MetricTimeSeriesKey(mts);
+            });
+
+        JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd =
+                groupRdd.mapValues( (Iterable<MetricTimeSeries> mtsIt) -> {
+            //TODO: pre-sort time series
+            MetricTimeSeries result = null;
+            for (MetricTimeSeries mts : mtsIt){
+                if (result == null) {
+                    result = new MetricTimeSeries
+                            .Builder(mts.getMetric())
+                            .attributes(mts.getAttributesReference()).build();
+                }
+                result.addAll(mts.getTimestampsAsArray(), mts.getValuesAsArray());
+            }
+            return result;
+        });
+
+        JavaRDD<MetricTimeSeries> resultJavaRdd =
+                joinedRdd.map( (Tuple2<MetricTimeSeriesKey, MetricTimeSeries> mtTuple) -> {
+            return mtTuple._2;
+        });
+
+        return new ChronixRDD(resultJavaRdd);
     }
 
 }
