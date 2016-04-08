@@ -15,6 +15,8 @@
  */
 package de.qaware.chronix.spark.api.java;
 
+import de.qaware.chronix.spark.api.java.ekg.EKGTimeSeries;
+import de.qaware.chronix.spark.api.java.ekg.EKGTimeSeriesConverter;
 import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
 import de.qaware.chronix.spark.api.java.util.StreamingResultsIterator;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
@@ -160,5 +162,14 @@ public class ChronixSparkContext implements Serializable {
 
         return new ChronixRDD(resultJavaRdd);
     }
-
+    /**
+     * HACK: um auf die Zeitreihe ohne Refelction auf Zeppelin zugreifen zu können
+     */
+    public JavaRDD<EKGTimeSeries> queryEKGData(
+            final SolrQuery query,
+            final String zkHost) throws SolrServerException {
+        ChronixRDD originalQuery = queryChronix(query, zkHost);
+        JavaRDD<EKGTimeSeries> ekgTimeSeriesRDD = originalQuery.map(t -> EKGTimeSeriesConverter.fromMetricTimeSeries(t));
+        return ekgTimeSeriesRDD;
+    }
 }
