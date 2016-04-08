@@ -34,6 +34,7 @@ class TestChronixSparkContext extends Specification {
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc)
         SolrQuery query = new SolrQuery("logMessage:*570*")
+        query.setRows()
         when:
         JavaRDD<SolrDocument> result = csc.querySolr(query, TestConfiguration.ZK_HOST)
         then:
