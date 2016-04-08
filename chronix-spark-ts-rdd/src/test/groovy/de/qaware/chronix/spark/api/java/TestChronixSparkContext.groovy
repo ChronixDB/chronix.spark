@@ -42,15 +42,18 @@ class TestChronixSparkContext extends Specification {
         docs.size() == 1
     }
 
-
     @Ignore
     def "testChronixQuery"() {
+        given:
         SparkConf conf = new SparkConf().setMaster(TestConfiguration.SPARK_MASTER).setAppName(TestConfiguration.APP_NAME)
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD")
+        when:
         ChronixRDD result = csc.queryChronix(query, TestConfiguration.ZK_HOST)
         List<MetricTimeSeries> timeSeries = result.take(5)
+
+        then:
         Assert.assertTrue(timeSeries.size() == 5)
         for (MetricTimeSeries ts : timeSeries) {
             System.out.println(ts.toString());
