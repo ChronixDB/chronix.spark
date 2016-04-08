@@ -39,7 +39,11 @@ public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTime
     public MetricTimeSeries from(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd) {
         try {
             //get the metric
-            String metric = defaultIfNull(binaryTimeSeries.get(METRIC).toString(), "default");
+            if (binaryTimeSeries.get(METRIC) == null) {
+                //Should not happen
+                throw new IllegalStateException("");
+            }
+            String metric = binaryTimeSeries.get(METRIC).toString();
 
             MetricTimeSeries.Builder tsBuilder = new MetricTimeSeries.Builder(metric);
 
@@ -71,13 +75,6 @@ public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTime
             LOGGER.error("Could not convert binary time series to metric time series.", e);
         }
         return null;
-    }
-
-    private <T> T defaultIfNull(T metric, T aDefault) {
-        if (metric == null) {
-            return aDefault;
-        }
-        return metric;
     }
 
     @Override
