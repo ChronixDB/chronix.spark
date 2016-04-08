@@ -16,6 +16,8 @@
 package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.timeseries.MetricTimeSeries;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,15 +47,31 @@ public class MetricTimeSeriesKey implements Serializable {
 
         MetricTimeSeriesKey that = (MetricTimeSeriesKey) o;
 
+        //TODO: make identity function on key more flexible (& use EqualsBuilder)
         if (!metric.equals(that.metric)) return false;
-        return attributes.equals(that.attributes);
+        if (!equalsAttributes(that, "host")) return false;
+        if (!equalsAttributes(that, "series")) return false;
+        if (!equalsAttributes(that, "process")) return false;
+        if (!equalsAttributes(that, "group")) return false;
+        if (!equalsAttributes(that, "ag")) return false;
+        return true;
+    }
 
+    private boolean equalsAttributes(MetricTimeSeriesKey that,
+                                     String attribute) {
+        Object oKey = this.attributes.get(attribute);
+        Object thatKey = that.attributes.get(attribute);
+        if (oKey == null) return false;
+        else return oKey.equals(thatKey);
     }
 
     @Override
     public int hashCode() {
-        int result = metric.hashCode();
-        result = 31 * result + attributes.hashCode();
-        return result;
+        return new HashCodeBuilder(17, 37)
+                .append(attributes.get("host"))
+                .append(attributes.get("series"))
+                .append(attributes.get("process"))
+                .append(attributes.get("group"))
+                .append(attributes.get("ag")).toHashCode();
     }
 }

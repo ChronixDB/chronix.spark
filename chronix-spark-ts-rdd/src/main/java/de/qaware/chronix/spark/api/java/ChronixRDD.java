@@ -37,11 +37,30 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
     }
 
     /**
+     * Action: Return iterator on contained time series.
      *
      * @return iterator on time series
      */
     public Iterator<MetricTimeSeries> iterator() {
         return this.collect().iterator();
     }
+
+
+    /**
+     * Action: Compute the average value.
+     *
+     * @return average value over all contained time series.
+     */
+    public float avg() {
+        return 0.0f;
+    }
+
+    //max()
+    //min()
+    //delta()
+    //filter()
+    //see TimeSeriesRDD
+    //see Kassiopeia TimeSeries POJO
+
 
 }

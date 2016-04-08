@@ -18,7 +18,7 @@ package de.qaware.chronix.spark.api.java;
 /**
  * Some common configuration for the test suite.
  */
-class TestConfiguration {
+class ConfigurationParams {
     public static final String ZK_HOST = "192.168.1.100:2181";
     public static final String SPARK_MASTER = "local[4]";
     public static final String APP_NAME = "Spark Chronix Testsuite";

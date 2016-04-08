@@ -16,6 +16,7 @@
 package de.qaware.chronix.spark.api.java
 
 import de.qaware.chronix.timeseries.MetricTimeSeries
+import de.qaware.chronix.timeseries.dt.Point
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.common.SolrDocument
 import org.apache.spark.SparkConf
@@ -25,18 +26,20 @@ import org.junit.Assert
 import spock.lang.Ignore
 import spock.lang.Specification
 
+import java.util.stream.Stream
+
 class TestChronixSparkContext extends Specification {
 
     @Ignore
     def "testSolrQuery"() {
         given:
-        SparkConf conf = new SparkConf().setMaster(TestConfiguration.SPARK_MASTER).setAppName(TestConfiguration.APP_NAME)
+        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc)
         SolrQuery query = new SolrQuery("logMessage:*570*")
         query.setRows()
         when:
-        JavaRDD<SolrDocument> result = csc.querySolr(query, TestConfiguration.ZK_HOST)
+        JavaRDD<SolrDocument> result = csc.querySolr(query, ConfigurationParams.ZK_HOST)
         then:
         List<SolrDocument> docs = result.take(1)
         docs.size() == 1
@@ -47,13 +50,13 @@ class TestChronixSparkContext extends Specification {
     @Ignore
     def "testChronixQuery"() {
         given:
-        SparkConf conf = new SparkConf().setMaster(TestConfiguration.SPARK_MASTER).setAppName(TestConfiguration.APP_NAME)
+        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD")
 
         when:
-        ChronixRDD result = csc.queryChronix(query, TestConfiguration.ZK_HOST)
+        ChronixRDD result = csc.queryChronix(query, ConfigurationParams.ZK_HOST)
         then:
         List<MetricTimeSeries> timeSeries = result.take(5)
 
@@ -66,21 +69,28 @@ class TestChronixSparkContext extends Specification {
         sc.close()
     }
 
+    @Ignore
     def "testQuery"() {
         given:
-        SparkConf conf = new SparkConf().setMaster(TestConfiguration.SPARK_MASTER).setAppName(TestConfiguration.APP_NAME)
+        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD AND host:lpswl10 AND process:wls1")
         when:
-        ChronixRDD resultChunked = csc.queryChronix(query, TestConfiguration.ZK_HOST)
-        ChronixRDD result = csc.query(query, TestConfiguration.ZK_HOST)
+        ChronixRDD resultChunked = csc.queryChronix(query, ConfigurationParams.ZK_HOST)
+        ChronixRDD result = csc.query(query, ConfigurationParams.ZK_HOST)
         then:
         long chunked = resultChunked.count()
         long joined = result.count()
-        Assert.assertTrue(resultChunked.count() > result.count())
         println "Chunked: " + chunked
         println "Joined: " + joined
+        for (MetricTimeSeries mts: result.collect()) {
+            println mts
+            //TODO: check ordering in time series
+            //TODO: check duplicates according time series identity
+        }
+
+        Assert.assertTrue(resultChunked.count() > result.count())
         cleanup:
         sc.close()
     }

@@ -19,16 +19,17 @@ import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class TestChronixRDD extends Specification {
 
-    @Ignore
     def "test constructor"() {
         given:
+        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
+        JavaSparkContext sc = new JavaSparkContext(conf)
+        ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD");
-        ChronixRDD rdd = createRdd(query);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST);
         Iterator<MetricTimeSeries> it = rdd.iterator();
         int i = 0;
 
@@ -41,11 +42,4 @@ class TestChronixRDD extends Specification {
         i > 0
     }
 
-    def ChronixRDD createRdd(SolrQuery query) {
-        SparkConf conf = new SparkConf().setMaster(TestConfiguration.SPARK_MASTER).setAppName(TestConfiguration.APP_NAME);
-
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        return csc.queryChronix(query, TestConfiguration.ZK_HOST);
-    }
 }

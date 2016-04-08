@@ -67,7 +67,6 @@ public class ChronixSparkContext implements Serializable {
         List<String> shards = SolrCloudUtil.buildShardList(cloudSolrClient);
 
         final SolrQuery query = origQuery.getCopy();
-
         // we'll be directing queries to each shard, so we don't want distributed
         query.set("distrib", false);
         query.set("collection", SolrCloudUtil.CHRONIX_COLLECTION);
@@ -104,6 +103,10 @@ public class ChronixSparkContext implements Serializable {
         cloudSolrClient.connect();
         List<String> shards = SolrCloudUtil.buildShardList(cloudSolrClient);
 
+        // we'll be directing queries to each shard, so we don't want distributed
+        final SolrQuery enhQuery = query.getCopy();
+        enhQuery.set("distrib", false);
+
         // parallelize the requests to the shards
         // TODO: provide data locality
         JavaRDD<MetricTimeSeries> docs = jsc.parallelize(shards, shards.size()).flatMap(
@@ -114,7 +117,7 @@ public class ChronixSparkContext implements Serializable {
                         return chronixStorage.streamFromSingleNode(
                                 new MetricTimeSeriesConverter(),
                                 SolrCloudUtil.getSingleNodeSolrClient(shardUrl),
-                                query
+                                enhQuery
                         )::iterator;
                     }
                 }
@@ -133,11 +136,13 @@ public class ChronixSparkContext implements Serializable {
                 return new MetricTimeSeriesKey(mts);
             });
 
-        JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd =
-                groupRdd.mapValues( (Iterable<MetricTimeSeries> mtsIt) -> {
-            //TODO: pre-sort time series
+        //TODO: Optimize performance (mapValues -> reduce, ....)
+        JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd;
+        joinedRdd = groupRdd.mapValues( (Iterable<MetricTimeSeries> mtsIt) -> {
+            MetricTimeSeriesOrdering ordering = new MetricTimeSeriesOrdering();
+            List<MetricTimeSeries> orderedChunks = ordering.immutableSortedCopy(mtsIt);
             MetricTimeSeries result = null;
-            for (MetricTimeSeries mts : mtsIt){
+            for (MetricTimeSeries mts : orderedChunks){
                 if (result == null) {
                     result = new MetricTimeSeries
                             .Builder(mts.getMetric())
