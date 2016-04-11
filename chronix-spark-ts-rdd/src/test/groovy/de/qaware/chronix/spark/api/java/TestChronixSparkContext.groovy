@@ -15,7 +15,6 @@
  */
 package de.qaware.chronix.spark.api.java
 
-import de.qaware.chronix.spark.api.java.ekg.EKGTimeSeries
 import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.common.SolrDocument
@@ -82,34 +81,13 @@ class TestChronixSparkContext extends Specification {
         long joined = result.count()
         println "Chunked: " + chunked
         println "Joined: " + joined
-        for (MetricTimeSeries mts: result.collect()) {
+        for (MetricTimeSeries mts : result.collect()) {
             println mts
             //TODO: check ordering in time series
             //TODO: check duplicates according time series identity
         }
 
         Assert.assertTrue(resultChunked.count() > result.count())
-        cleanup:
-        sc.close()
-    }
-
-
-    def "testEKGQuery"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD AND host:lpswl10 AND process:wls1")
-        when:
-        JavaRDD<EKGTimeSeries> result  = csc.queryEKGData(query, ConfigurationParams.ZK_HOST)
-        then:
-        long count = result.count()
-        println "count: " + count
-        Assert.assertNotNull(result.take(1).get(0).data)
-
-        println result.take(1)
-        Assert.assertNotNull(result.take(1).get(0).data)
-
         cleanup:
         sc.close()
     }
