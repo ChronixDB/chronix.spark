@@ -15,8 +15,8 @@
  */
 package de.qaware.chronix.spark.api.java
 
+import de.qaware.chronix.spark.api.java.ekg.EKGTimeSeries
 import de.qaware.chronix.timeseries.MetricTimeSeries
-import de.qaware.chronix.timeseries.dt.Point
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.common.SolrDocument
 import org.apache.spark.SparkConf
@@ -25,8 +25,6 @@ import org.apache.spark.api.java.JavaSparkContext
 import org.junit.Assert
 import spock.lang.Ignore
 import spock.lang.Specification
-
-import java.util.stream.Stream
 
 class TestChronixSparkContext extends Specification {
 
@@ -91,6 +89,27 @@ class TestChronixSparkContext extends Specification {
         }
 
         Assert.assertTrue(resultChunked.count() > result.count())
+        cleanup:
+        sc.close()
+    }
+
+
+    def "testEKGQuery"() {
+        given:
+        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
+        JavaSparkContext sc = new JavaSparkContext(conf)
+        ChronixSparkContext csc = new ChronixSparkContext(sc);
+        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD AND host:lpswl10 AND process:wls1")
+        when:
+        JavaRDD<EKGTimeSeries> result  = csc.queryEKGData(query, ConfigurationParams.ZK_HOST)
+        then:
+        long count = result.count()
+        println "count: " + count
+        Assert.assertNotNull(result.take(1).get(0).data)
+
+        println result.take(1)
+        Assert.assertNotNull(result.take(1).get(0).data)
+
         cleanup:
         sc.close()
     }
