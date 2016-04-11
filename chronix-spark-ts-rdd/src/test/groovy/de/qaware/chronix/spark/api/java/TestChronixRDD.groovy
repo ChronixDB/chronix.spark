@@ -56,9 +56,11 @@ class TestChronixRDD extends Specification {
         when:
         long start = System.currentTimeMillis();
         double mean = rdd.mean();
+        long count = rdd.countObservations()
         long stop = System.currentTimeMillis();
         println "Mean: " + mean
         println "   - execution time: " + (stop - start)
+        println "   - relevant observations: " + count
         then:
         mean > 0.0f
         cleanup:
