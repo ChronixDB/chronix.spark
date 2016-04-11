@@ -124,6 +124,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
     //TODO:
     // - delta()
     // - filter()
+    // Transformations to other types: DataFrame
     // - easy additional functions based on DoubleRDD (esp. stats & approx)
     // - see TimeSeriesRDD
     // - see Kassiopeia TimeSeries POJO
