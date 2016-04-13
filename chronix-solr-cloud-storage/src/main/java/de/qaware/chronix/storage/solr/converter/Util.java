@@ -28,6 +28,10 @@ import java.io.IOException;
  */
 public class Util {
 
+    private Util() {
+        //avoid instances
+    }
+
     /**
      * @param data the chunk of time series data as string (base64 encoded and zipped)
      * @return the points serialized to protocol buffers
