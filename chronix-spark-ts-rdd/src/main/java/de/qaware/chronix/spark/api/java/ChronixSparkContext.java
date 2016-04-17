@@ -15,8 +15,6 @@
  */
 package de.qaware.chronix.spark.api.java;
 
-import de.qaware.chronix.spark.api.java.ekg.EKGTimeSeries;
-import de.qaware.chronix.spark.api.java.ekg.EKGTimeSeriesConverter;
 import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
 import de.qaware.chronix.spark.api.java.util.StreamingResultsIterator;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
@@ -91,7 +89,7 @@ public class ChronixSparkContext implements Serializable {
     }
 
     /**
-     *
+     * Low-level chunked query.
      * @param query
      * @param zkHost
      * @return
@@ -127,6 +125,15 @@ public class ChronixSparkContext implements Serializable {
         return new ChronixRDD(docs);
     }
 
+    /**
+     * This method concats all timeseries chunks together to a single
+     * MetrixTimeSeries Object. This method can be slow if the amount of
+     * shuffeled data.
+     * @param query
+     * @param zkHost
+     * @return
+     * @throws SolrServerException
+     */
     public ChronixRDD query(
             final SolrQuery query,
             final String zkHost) throws SolrServerException {
@@ -135,16 +142,16 @@ public class ChronixSparkContext implements Serializable {
 
         JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
                 = rootRdd.groupBy((MetricTimeSeries mts) -> {
-                return new MetricTimeSeriesKey(mts);
-            });
+            return new MetricTimeSeriesKey(mts);
+        });
 
         //TODO: Optimize performance (mapValues -> reduce, ....)
         JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd;
-        joinedRdd = groupRdd.mapValues( (Iterable<MetricTimeSeries> mtsIt) -> {
+        joinedRdd = groupRdd.mapValues((Iterable<MetricTimeSeries> mtsIt) -> {
             MetricTimeSeriesOrdering ordering = new MetricTimeSeriesOrdering();
             List<MetricTimeSeries> orderedChunks = ordering.immutableSortedCopy(mtsIt);
             MetricTimeSeries result = null;
-            for (MetricTimeSeries mts : orderedChunks){
+            for (MetricTimeSeries mts : orderedChunks) {
                 if (result == null) {
                     result = new MetricTimeSeries
                             .Builder(mts.getMetric())
@@ -156,20 +163,10 @@ public class ChronixSparkContext implements Serializable {
         });
 
         JavaRDD<MetricTimeSeries> resultJavaRdd =
-                joinedRdd.map( (Tuple2<MetricTimeSeriesKey, MetricTimeSeries> mtTuple) -> {
-            return mtTuple._2;
-        });
+                joinedRdd.map((Tuple2<MetricTimeSeriesKey, MetricTimeSeries> mtTuple) -> {
+                    return mtTuple._2;
+                });
 
         return new ChronixRDD(resultJavaRdd);
-    }
-    /**
-     * HACK: um auf die Zeitreihe ohne Refelction auf Zeppelin zugreifen zu können
-     */
-    public JavaRDD<EKGTimeSeries> queryEKGData(
-            final SolrQuery query,
-            final String zkHost) throws SolrServerException {
-        ChronixRDD originalQuery = queryChronix(query, zkHost);
-        JavaRDD<EKGTimeSeries> ekgTimeSeriesRDD = originalQuery.map(t -> EKGTimeSeriesConverter.fromMetricTimeSeries(t));
-        return ekgTimeSeriesRDD;
     }
 }

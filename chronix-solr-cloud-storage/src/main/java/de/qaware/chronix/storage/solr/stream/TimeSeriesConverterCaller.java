@@ -22,8 +22,6 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
 /**
@@ -71,33 +69,5 @@ public class TimeSeriesConverterCaller<T> implements Callable<T> {
         T timeSeries = documentConverter.from(timeSeriesBuilder.build(), queryStart, queryEnd);
         LOGGER.debug("Returning time series {} to callee", timeSeries);
         return timeSeries;
-    }
-
-    /**
-     * Adds user defined attributes to the binary time series builder.
-     * Checks if the attribute is of type byte[], String, Number or Collection.
-     * Otherwise the attribute is ignored.
-     *
-     * @param timeSeriesBuilder the binary time series builder
-     * @param attributeField    the attribute field
-     */
-    private void addToBuilder(BinaryTimeSeries.Builder timeSeriesBuilder, Map.Entry<String, Object> attributeField) {
-        Object valueType = attributeField.getValue();
-
-        if (isValidType(valueType)) {
-            timeSeriesBuilder.field(attributeField.getKey(), attributeField.getValue());
-        } else {
-            LOGGER.warn("Field {} is not of type field or collection", attributeField);
-        }
-    }
-
-    /**
-     * Checks if the given object is an byte[], String, Number or Collection.
-     *
-     * @param valueType the object holding the value
-     * @return true if the object is an instance of byte[], String, Number or Collection.
-     */
-    private boolean isValidType(Object valueType) {
-        return valueType instanceof byte[] || valueType instanceof String || valueType instanceof Number || valueType instanceof Collection;
     }
 }

@@ -195,6 +195,6 @@ sonarqube {
         property "sonar.projectName", "ChronixDB-Spark"
         property "sonar.projectKey", "de.qaware.chronix:chronix.spark"
         property "sonar.projectVersoin", "$project.version"
-
+        property "sonar.exclusions","src/main/generated/de/qaware/ekg/collector/storage/protocol/*"
     }
 }

@@ -21,13 +21,10 @@ import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.DoubleFlatMapFunction;
 import org.apache.spark.api.java.function.DoubleFunction;
-import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.MapFunction;
 import scala.reflect.ClassTag$;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * ChronixRDD: A time series implementation based on Chronix.
