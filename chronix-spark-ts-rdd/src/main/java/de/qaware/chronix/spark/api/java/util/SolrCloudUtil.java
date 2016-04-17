@@ -33,17 +33,40 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * Collection of some static utility methods to ease usage of
+ * Solr Cloud within Chronix Spark.
+ */
 public class SolrCloudUtil {
 
+    /**
+     * The default Solr collection for time series data.
+     * Defaul name is Chronix-wide "ekgdata" due to historical reasons.
+     */
     public static final String CHRONIX_COLLECTION = "ekgdata";
+
+    /**
+     * The default pagesize for paginations within Solr.
+     */
     public static final int CHRONIX_DEFAULT_PAGESIZE = 1000;
 
-
+    /**
+     * Returns a connection to a single Solr node by shard URL.
+     *
+     * @param shardUrl
+     * @return a connection to a single Solr node within a Solr Cloud
+     */
     public static HttpSolrClient getSingleNodeSolrClient(String shardUrl){
         HttpSolrClient hsc = new HttpSolrClient(shardUrl);
         return hsc;
     }
 
+    /**
+     * Returns the list of shards of the default collection.
+     *
+     * @param cloudSolrServer
+     * @return the list of shards of the default collection
+     */
     public static List<String> buildShardList(CloudSolrClient cloudSolrServer) {
         ZkStateReader zkStateReader = cloudSolrServer.getZkStateReader();
 
@@ -87,10 +110,31 @@ public class SolrCloudUtil {
         return shards;
     }
 
+    /**
+     * Performs a Solr query.
+     *
+     * @param solrServer
+     * @param solrQuery
+     * @param startIndex
+     * @param cursorMark
+     * @return
+     * @throws SolrServerException
+     */
     public static QueryResponse querySolr(SolrClient solrServer, SolrQuery solrQuery, int startIndex, String cursorMark) throws SolrServerException {
         return querySolr(solrServer, solrQuery, startIndex, cursorMark, null);
     }
 
+    /**
+     * Performs a Solr query.
+     *
+     * @param solrServer
+     * @param solrQuery
+     * @param startIndex
+     * @param cursorMark
+     * @param callback
+     * @return
+     * @throws SolrServerException
+     */
     public static QueryResponse querySolr(SolrClient solrServer, SolrQuery solrQuery, int startIndex, String cursorMark, StreamingResponseCallback callback) throws SolrServerException {
         QueryResponse resp = null;
         try {
