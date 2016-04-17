@@ -15,6 +15,8 @@
  */
 package de.qaware.chronix.spark.api.java;
 
+import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesKey;
+import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesOrdering;
 import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
 import de.qaware.chronix.spark.api.java.util.StreamingResultsIterator;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
