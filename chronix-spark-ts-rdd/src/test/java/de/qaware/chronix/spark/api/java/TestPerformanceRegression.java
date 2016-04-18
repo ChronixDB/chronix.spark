@@ -64,7 +64,7 @@ public class TestPerformanceRegression {
 
                 //Read data into ChronixRDD
                 SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-                ChronixRDD rdd = csc.queryChronix(query,
+                ChronixRDD rdd = csc.queryChronixChunks(query,
                         ConfigurationParams.ZK_HOST,
                         ConfigurationParams.CHRONIX_COLLECTION,
                         new ChronixSolrCloudStorage());

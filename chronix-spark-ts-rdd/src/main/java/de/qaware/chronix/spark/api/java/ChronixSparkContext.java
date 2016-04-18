@@ -68,7 +68,7 @@ public class ChronixSparkContext implements Serializable {
      * @return ChronixRDD of time series (chunks)
      * @throws SolrServerException
      */
-    public ChronixRDD queryChronix(
+    public ChronixRDD queryChronixChunks(
             final SolrQuery query,
             final String zkHost,
             final String collection,
@@ -98,8 +98,7 @@ public class ChronixSparkContext implements Serializable {
 
     /**
      * This method concats all timeseries chunks together to a single
-     * MetrixTimeSeries Object. This method can be slow if the amount of
-     * shuffeled data.
+     * MetrixTimeSeries Object.
      *
      * @param query Solr query
      * @param zkHost ZooKeeper host
@@ -114,7 +113,7 @@ public class ChronixSparkContext implements Serializable {
             final String collection,
             final ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage) throws SolrServerException {
 
-        ChronixRDD rootRdd = queryChronix(query, zkHost, collection, chronixStorage);
+        ChronixRDD rootRdd = queryChronixChunks(query, zkHost, collection, chronixStorage);
 
         JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
                 = rootRdd.groupBy((MetricTimeSeries mts) -> {
