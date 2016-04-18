@@ -15,6 +15,7 @@ dependencies {
     compile 'de.qaware.chronix:chronix-kassiopeia-simple:0.1.8-beta-1'
     compile 'de.qaware.chronix:chronix-kassiopeia:0.1.8-beta-1'
     compile 'de.qaware.chronix:chronix-kassiopeia-converter-common:0.1.8-beta-1'
+    compile 'de.qaware.chronix:chronix-kassiopeia-simple-converter:0.1.8-beta-1'
 
 
 }
