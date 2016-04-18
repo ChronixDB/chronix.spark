@@ -23,7 +23,6 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collection;
 import java.util.Spliterator;
@@ -60,10 +59,10 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
     /**
      * Fetches a stream of time series only from a single node.
      *
-     * @param converter
-     * @param connection
-     * @param query
-     * @return
+     * @param converter the time series type converter
+     * @param connection the solr client connection to a single solr server
+     * @param query the solr query
+     * @return a stream of time series
      */
     public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, SolrClient connection, SolrQuery query) {
         LOGGER.debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
@@ -75,6 +74,6 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
 
     @Override
     public boolean add(TimeSeriesConverter<T> converter, Collection<T> documents, CloudSolrClient connection) {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 }
