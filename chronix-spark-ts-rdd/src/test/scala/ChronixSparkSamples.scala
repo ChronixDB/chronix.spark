@@ -13,7 +13,7 @@ object ChronixSparkSamples {
       try {
         val csc: ChronixSparkContext = new ChronixSparkContext(sc)
         val query: SolrQuery = new SolrQuery(
-          "metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD")
+          "metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\"")
         val result = csc.queryChronix(query, ZK_HOST)
         val timeSeries = result.take(5)
         println(timeSeries)
