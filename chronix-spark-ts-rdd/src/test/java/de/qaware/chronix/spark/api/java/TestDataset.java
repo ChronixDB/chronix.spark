@@ -24,6 +24,7 @@ import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SQLContext;
 import org.junit.Test;
+
 import java.io.Serializable;
 
 import static org.junit.Assert.assertTrue;

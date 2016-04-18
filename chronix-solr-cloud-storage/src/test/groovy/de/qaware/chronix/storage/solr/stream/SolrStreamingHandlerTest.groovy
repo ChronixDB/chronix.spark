@@ -14,9 +14,11 @@
  *    limitations under the License.
  */
 package de.qaware.chronix.storage.solr.stream
+
 import org.apache.solr.common.SolrDocument
 import spock.lang.Specification
 import spock.lang.Unroll
+
 /**
  * Unit test for the solr streaming handler
  * @author f.lautenschlager

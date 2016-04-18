@@ -75,7 +75,7 @@ public class StreamingResultsIterator extends StreamingResponseCallback implemen
                 hasNext = fetchNextPage();
             } catch (Exception e) {
                 if (e instanceof RuntimeException) {
-                    throw (RuntimeException)e;
+                    throw (RuntimeException) e;
                 } else {
                     throw new RuntimeException(e);
                 }
@@ -87,7 +87,8 @@ public class StreamingResultsIterator extends StreamingResponseCallback implemen
         if (!hasNext && closeAfterIterating) {
             try {
                 solrServer.shutdown();
-            } catch (Exception exc) {}
+            } catch (Exception exc) {
+            }
         }
 
         return hasNext;
@@ -135,8 +136,8 @@ public class StreamingResultsIterator extends StreamingResponseCallback implemen
         }
 
         if (next == null) {
-            throw new RuntimeException("No SolrDocument in queue (waited 60 seconds) while processing cursorMark="+
-                    cursorMarkOfCurrentPage+", read "+numDocs+" of "+totalDocs+
+            throw new RuntimeException("No SolrDocument in queue (waited 60 seconds) while processing cursorMark=" +
+                    cursorMarkOfCurrentPage + ", read " + numDocs + " of " + totalDocs +
                     " so far. Most likely this means your query's sort criteria is not generating stable results for computing deep-paging cursors, has the index changed? " +
                     "If so, try using a filter criteria the bounds the results to non-changing data.");
         }
@@ -165,6 +166,6 @@ public class StreamingResultsIterator extends StreamingResponseCallback implemen
         docListInfoLatch.countDown();
         totalDocs = numFound;
         if (currentPageSize > totalDocs)
-            currentPageSize = (int)totalDocs;
+            currentPageSize = (int) totalDocs;
     }
 }

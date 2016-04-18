@@ -23,10 +23,8 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SQLContext;
-import org.junit.Test;
 
 import java.util.Iterator;
 
@@ -44,10 +42,9 @@ public class TestPerformanceRegression {
      * Please add your new measurements here with
      * every change on Spark Chronix.
      * ------------------------------------------
-     *
+     * <p>
      * first attempt            : 9,603ms
      * with rdd.cache()         : 8,223ms
-     *
      */
     public static void main(String[] args) throws SolrServerException {
         //Create Spark context
@@ -91,7 +88,7 @@ public class TestPerformanceRegression {
             }
             long stop = System.currentTimeMillis();
             // BENCHMARK STOP ...................................
-            System.out.println("\nBenchmark duration: " + (stop-start) + " ms");
+            System.out.println("\nBenchmark duration: " + (stop - start) + " ms");
         } finally {
             //Clean up
             sc.close();

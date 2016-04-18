@@ -27,15 +27,15 @@ import org.apache.solr.client.solrj.impl.CloudSolrClient;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Stream;
 import java.util.zip.InflaterInputStream;
 
 /**
  * A mock implementation of a Chronix Solr Cloud Storage.
- *
+ * <p>
  * Reads test data from a Kryo serialized file of time series test data.
  */
 public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricTimeSeries> {
@@ -43,7 +43,6 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
     private String testDataFile;
 
     /**
-     *
      * @param testDataFileName file where the test data is. Use TestDataExternalizer to extract test data into a file.
      */
     public ChronixSolrCloudStorageMock(String testDataFileName) {

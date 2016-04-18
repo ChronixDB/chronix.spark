@@ -27,7 +27,6 @@ import org.apache.solr.common.cloud.*;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -36,7 +35,7 @@ import java.util.Set;
 /**
  * Collection of some static utility methods to ease usage of
  * Solr Cloud within Chronix Spark.
- *
+ * <p>
  * Heavily inspired by and copy &amp; pasted from <a href="https://github.com/lucidworks/spark-solr">spark-solr</a> in
  * an earlier version. Kudos to Lucidworks!
  */
@@ -53,7 +52,7 @@ public class SolrCloudUtil {
      * @param shardUrl the url of the solr endpoint where the shard resides
      * @return a connection to a single Solr node within a Solr Cloud
      */
-    public static HttpSolrClient getSingleNodeSolrClient(String shardUrl){
+    public static HttpSolrClient getSingleNodeSolrClient(String shardUrl) {
         return new HttpSolrClient(shardUrl);
     }
 
@@ -97,8 +96,8 @@ public class SolrCloudUtil {
                 }
                 int numReplicas = replicas.size();
                 if (numReplicas == 0)
-                    throw new IllegalStateException("Shard " + slice.getName() + " in collection "+
-                            coll+" does not have any active replicas!");
+                    throw new IllegalStateException("Shard " + slice.getName() + " in collection " +
+                            coll + " does not have any active replicas!");
 
                 String replicaUrl = (numReplicas == 1) ? replicas.get(0) : replicas.get(random.nextInt(replicas.size()));
                 shards.add(replicaUrl);
@@ -111,7 +110,7 @@ public class SolrCloudUtil {
      * Performs a Solr query.
      *
      * @param solrServer the solr client to a single solr server
-     * @param solrQuery the solr query
+     * @param solrQuery  the solr query
      * @param startIndex the index to start the result
      * @param cursorMark the result cursor mark
      * @return a solr query response
@@ -125,10 +124,10 @@ public class SolrCloudUtil {
      * Performs a Solr query.
      *
      * @param solrServer the solr client to a single solr server
-     * @param solrQuery the solr query
+     * @param solrQuery  the solr query
      * @param startIndex the index to start the result
      * @param cursorMark the result cursor mark
-     * @param callback a callback object for streaming result handling
+     * @param callback   a callback object for streaming result handling
      * @return a solr query response
      * @throws SolrServerException
      */
@@ -168,14 +167,14 @@ public class SolrCloudUtil {
                     }
                 } catch (Exception excOnRetry) {
                     if (excOnRetry instanceof SolrServerException) {
-                        throw (SolrServerException)excOnRetry;
+                        throw (SolrServerException) excOnRetry;
                     } else {
                         throw new SolrServerException(excOnRetry);
                     }
                 }
             } else {
                 if (exc instanceof SolrServerException) {
-                    throw (SolrServerException)exc;
+                    throw (SolrServerException) exc;
                 } else {
                     throw new SolrServerException(exc);
                 }

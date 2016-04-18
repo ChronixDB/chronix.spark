@@ -15,10 +15,8 @@
  */
 package de.qaware.chronix.spark.api.java.helpers;
 
-import com.clearspring.analytics.util.Lists;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
-import com.twitter.chill.config.Config;
 import de.qaware.chronix.spark.api.java.ChronixRDD;
 import de.qaware.chronix.spark.api.java.ChronixSparkContext;
 import de.qaware.chronix.spark.api.java.ConfigurationParams;
@@ -26,12 +24,10 @@ import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.commons.collections.IteratorUtils;
-import org.apache.commons.configuration.Configuration;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -39,7 +35,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 
@@ -49,7 +44,6 @@ import java.util.zip.DeflaterOutputStream;
 public class DataExternalizer {
 
     /**
-     *
      * @param args optional first argument: file to serialize to. A default file name is provided.
      * @throws SolrServerException
      * @throws FileNotFoundException

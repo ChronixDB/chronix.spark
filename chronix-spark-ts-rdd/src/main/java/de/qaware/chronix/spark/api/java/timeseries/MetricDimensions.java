@@ -33,17 +33,17 @@ public enum MetricDimensions {
         this.id = id;
     }
 
-    public String getId(){
-        return id;
-    }
-
-    public String toString(){
-        return id;
-    }
-
     public static MetricDimensions[] getIdentityDimensions() {
-        return new MetricDimensions[] {
-            METRIC, HOST, MEASUREMENT_SERIES, PROCESS, METRIC_GROUP, AGGREGATION_LEVEL
+        return new MetricDimensions[]{
+                METRIC, HOST, MEASUREMENT_SERIES, PROCESS, METRIC_GROUP, AGGREGATION_LEVEL
         };
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String toString() {
+        return id;
     }
 }

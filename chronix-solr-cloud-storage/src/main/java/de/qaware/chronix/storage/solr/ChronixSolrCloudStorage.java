@@ -21,7 +21,6 @@ import de.qaware.chronix.streaming.StorageService;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
@@ -61,9 +60,9 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
     /**
      * Fetches a stream of time series only from a single node.
      *
-     * @param converter the time series type converter
+     * @param converter  the time series type converter
      * @param connection the solr client connection to a single solr server
-     * @param query the solr query
+     * @param query      the solr query
      * @return a stream of time series
      */
     public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, SolrClient connection, SolrQuery query) {

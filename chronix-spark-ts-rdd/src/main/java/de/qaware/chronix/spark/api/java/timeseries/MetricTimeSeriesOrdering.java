@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 
 /**
  * Orders MetricTimeSeries by their start timestamp
- *
+ * <p>
  * left < right -> -1
  * left = right = 0
  * left > right -> +1

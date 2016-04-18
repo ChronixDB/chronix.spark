@@ -37,11 +37,11 @@ import java.util.function.Function;
 
 /**
  * ChronixRDD: A time series implementation based on Chronix.
- *
+ * <p>
  * The RDD represents a set of time series - the unit of parallelization
  * is one time series. A ChronixRDD can be created by and is bound to
  * a ChronixSparkContext.
- *
+ * <p>
  * The RDD contains time series specific actions and transformations. For
  * query purposes please use ChronixSparkContext as only the Context can
  * perform predicate / aggregation pushdown right now.
@@ -51,7 +51,7 @@ import java.util.function.Function;
 public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
 
     public ChronixRDD(JavaRDD<MetricTimeSeries> tsRdd) {
-       super(tsRdd.rdd(), ClassTag$.MODULE$.apply(MetricTimeSeries.class));
+        super(tsRdd.rdd(), ClassTag$.MODULE$.apply(MetricTimeSeries.class));
     }
 
     /**
@@ -125,7 +125,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
                 new DoubleFunction<MetricTimeSeries>() {
                     @Override
                     public double call(MetricTimeSeries value) throws Exception {
-                        return (double)value.size();
+                        return (double) value.size();
                     }
                 });
         return sizesRdd.sum().longValue();
@@ -137,11 +137,11 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @return RDD of MetricObservations
      */
     public JavaRDD<MetricObservation> toObservations() {
-        return this.flatMap(new FlatMapFunction<MetricTimeSeries, MetricObservation>(){
+        return this.flatMap(new FlatMapFunction<MetricTimeSeries, MetricObservation>() {
 
             @Override
             public Iterable<MetricObservation> call(MetricTimeSeries ts) throws Exception {
-                return ts.points().map( new Function<Point, MetricObservation>() {
+                return ts.points().map(new Function<Point, MetricObservation>() {
                     @Override
                     public MetricObservation apply(Point point) {
                         //null-safe read of dimensional values
@@ -170,13 +170,13 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
 
     /**
      * Transformation: Derives a Spark SQL DataFrame from a ChronixRDD.
-     *
+     * <p>
      * The DataFrame contains the following columns:
      * <ul>
-     *   <li>for each dimension (@see: de.qaware.chronix.spark.api.java.timeseries.MetricDimensions) one column</li>
-     *   <li>one column for the observations' timestamp</li>
-     *   <li>one column for the measurement value at the observation timestamp</li>
-     *  </ul>
+     * <li>for each dimension (@see: de.qaware.chronix.spark.api.java.timeseries.MetricDimensions) one column</li>
+     * <li>one column for the observations' timestamp</li>
+     * <li>one column for the measurement value at the observation timestamp</li>
+     * </ul>
      *
      * @param sqlContext an open SQLContext
      * @return a DataFrame containing the ChronixRDD data
@@ -190,15 +190,15 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
 
     /**
      * Transformation: Derives a Spark Dataset of observations from a ChronixRDD.
-     *
+     * <p>
      * WARNING: The Dataset-API is currently not stable. So this is an experimental feature on Chronix Spark.
      * We've flagged it deprecated to express its experimental nature (which is semantically symmetric to legacy methods).
      * More on the Datasets API here:
      * <a href="https://databricks.com/blog/2016/01/04/introducing-spark-datasets.html">databricks Blog: Introducing Spark Datasets (4/1/2016)</a>.
      *
-     * @deprecated
      * @param sqlContext an open SQLContext
      * @return a Dataset of MetricObservations
+     * @deprecated
      */
     public Dataset<MetricObservation> toObservationsDataset(SQLContext sqlContext) {
         return sqlContext.createDataset(this.toObservations().rdd(), Encoders.bean(MetricObservation.class));

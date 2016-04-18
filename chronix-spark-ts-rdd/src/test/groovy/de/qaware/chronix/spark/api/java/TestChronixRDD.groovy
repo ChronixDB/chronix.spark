@@ -22,7 +22,6 @@ import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
-import spock.lang.Ignore
 import spock.lang.Specification
 
 import static org.junit.Assert.assertTrue
@@ -123,13 +122,13 @@ class TestChronixRDD extends Specification {
         then:
         //Assert that all columns are available
         List<String> columns = Arrays.asList(df.columns());
-        assertTrue( columns.contains("timestamp") );
-        assertTrue( columns.contains("value") );
-        for (MetricDimensions dim : MetricDimensions.values()){
-            assertTrue( columns.contains(dim.getId()) );
+        assertTrue(columns.contains("timestamp"));
+        assertTrue(columns.contains("value"));
+        for (MetricDimensions dim : MetricDimensions.values()) {
+            assertTrue(columns.contains(dim.getId()));
         }
         //Assert that DataFrame is not empty
-        assertTrue ( df.count() > 0 );
+        assertTrue(df.count() > 0);
         cleanup:
         sc.close()
     }

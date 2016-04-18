@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 /**
  * A metric observation datatype.
- *
+ * <p>
  * Wrapper datatype to convert MetricTimeSeries to MetricObservationBeans
  * esp. useful to create Spark DataFrames.
  */
@@ -40,27 +40,27 @@ public class MetricObservation implements Serializable {
      * Empty constructor for reflection purposes / to be compliant with Java Bean specification.
      * Please use the value constructor per default.
      */
-    public MetricObservation() {}
+    public MetricObservation() {
+    }
 
     /**
-     *
-     * @param metric the metric (dimension)
-     * @param host the host (dimension)
+     * @param metric            the metric (dimension)
+     * @param host              the host (dimension)
      * @param measurementSeries the measurement series (dimension)
-     * @param process the process (dimension)
-     * @param group the metric group (dimension)
-     * @param ag the aggregation level (dimension)
-     * @param timestamp the timestamp (primary dimension)
-     * @param value the value
+     * @param process           the process (dimension)
+     * @param group             the metric group (dimension)
+     * @param ag                the aggregation level (dimension)
+     * @param timestamp         the timestamp (primary dimension)
+     * @param value             the value
      */
     public MetricObservation(String metric,
-                              String host,
-                              String measurementSeries,
-                              String process,
-                              String group,
-                              String ag,
-                              long timestamp,
-                              double value) {
+                             String host,
+                             String measurementSeries,
+                             String process,
+                             String group,
+                             String ag,
+                             long timestamp,
+                             double value) {
         this.metric = metric;
         this.host = host;
         this.measurementSeries = measurementSeries;
@@ -75,13 +75,21 @@ public class MetricObservation implements Serializable {
         return metric;
     }
 
+    public void setMetric(String metric) {
+        this.metric = metric;
+    }
+
     public String getHost() {
         return host;
     }
 
+    public void setHost(String host) {
+        this.host = host;
+    }
+
     /**
      * Returns the measurement series name.
-     *
+     * <p>
      * Used "measurement" as property name to be symmetric with MetricTimeSeries attribute name
      *
      * @return measurement series name
@@ -90,57 +98,49 @@ public class MetricObservation implements Serializable {
         return measurementSeries;
     }
 
-    public String getProcess() {
-        return process;
-    }
-
-    public String getAg() {
-        return ag;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    public void setMetric(String metric) {
-        this.metric = metric;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
     /**
      * Sets the measurement series name.
-     *
+     * <p>
      * Used "measurement" as property name to be symmetric with MetricTimeSeries attribute name
      */
     public void setMeasurement(String measurementSeries) {
         this.measurementSeries = measurementSeries;
     }
 
+    public String getProcess() {
+        return process;
+    }
+
     public void setProcess(String process) {
         this.process = process;
+    }
+
+    public String getAg() {
+        return ag;
     }
 
     public void setAg(String ag) {
         this.ag = ag;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public long getTimestamp() {
+        return timestamp;
     }
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public double getValue() {
+        return value;
     }
 
     public void setValue(double value) {
@@ -158,7 +158,8 @@ public class MetricObservation implements Serializable {
         if (Double.compare(that.value, value) != 0) return false;
         if (!metric.equals(that.metric)) return false;
         if (host != null ? !host.equals(that.host) : that.host != null) return false;
-        if (measurementSeries != null ? !measurementSeries.equals(that.measurementSeries) : that.measurementSeries != null) return false;
+        if (measurementSeries != null ? !measurementSeries.equals(that.measurementSeries) : that.measurementSeries != null)
+            return false;
         if (process != null ? !process.equals(that.process) : that.process != null) return false;
         if (ag != null ? !ag.equals(that.ag) : that.ag != null) return false;
         return group != null ? group.equals(that.group) : that.group == null;

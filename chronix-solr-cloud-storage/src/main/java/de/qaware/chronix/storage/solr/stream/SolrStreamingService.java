@@ -56,26 +56,20 @@ public class SolrStreamingService<T> implements Iterator<T> {
      * Converter for converting the documents
      */
     private final TimeSeriesConverter<T> converter;
-
+    /**
+     * The executor service to do the work asynchronously
+     */
+    private final ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+    /**
+     * The handler for this service
+     */
+    private final SolrStreamingHandler solrStreamingHandler;
     /**
      * Query parameters
      */
     private int nrOfTimeSeriesPerBatch;
     private long nrOfAvailableTimeSeries = -1;
     private int currentDocumentCount = 0;
-
-
-    /**
-     * The executor service to do the work asynchronously
-     */
-    private final ListeningExecutorService service = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
-
-    /**
-     * The handler for this service
-     */
-    private final SolrStreamingHandler solrStreamingHandler;
-
-
     /**
      * Handler waiting for future callbacks
      */

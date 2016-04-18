@@ -22,11 +22,9 @@ import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.java.JavaSparkContext
 import org.junit.Assert
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class TestChronixSparkContext extends Specification {
-
 
 
     def "testSolrQuery"() {

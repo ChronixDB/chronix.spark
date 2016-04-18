@@ -36,10 +36,10 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- *  A factory to create ChronixRDD instances.
- *
- *  Queries a SolrCloud to obtain time series data.
- *  Is bound to a JavaSparkContext.
+ * A factory to create ChronixRDD instances.
+ * <p>
+ * Queries a SolrCloud to obtain time series data.
+ * Is bound to a JavaSparkContext.
  */
 public class ChronixSparkContext implements Serializable {
 
@@ -57,15 +57,15 @@ public class ChronixSparkContext implements Serializable {
      *
      * @return the contained Spark Context
      */
-    public JavaSparkContext getSparkContext(){
+    public JavaSparkContext getSparkContext() {
         return jsc;
     }
 
     /**
      * Creates a JavaRDD of SolrDocuments for a Solr query.
      *
-     * @param query Solr query
-     * @param zkHost ZooKeeper host URL
+     * @param query      Solr query
+     * @param zkHost     ZooKeeper host URL
      * @param collection the Solr collection of chronix time series data
      * @return a JavaRDD of SolrDocuments as the Solr query result
      * @throws SolrServerException
@@ -105,7 +105,7 @@ public class ChronixSparkContext implements Serializable {
      *
      * @param query
      * @param zkHost
-     * @param collection the Solr collection of chronix time series data
+     * @param collection     the Solr collection of chronix time series data
      * @param chronixStorage a ChronixSolrCloudStorage instance
      * @return
      * @throws SolrServerException
@@ -146,7 +146,7 @@ public class ChronixSparkContext implements Serializable {
      *
      * @param query
      * @param zkHost
-     * @param collection the Solr collection of chronix time series data
+     * @param collection     the Solr collection of chronix time series data
      * @param chronixStorage a ChronixSolrCloudStorage instance
      * @return
      * @throws SolrServerException
