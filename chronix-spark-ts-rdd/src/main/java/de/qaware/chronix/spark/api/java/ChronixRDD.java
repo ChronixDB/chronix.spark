@@ -118,7 +118,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
         return sizesRdd.sum().longValue();
     }
 
-    //TODO:
+    //TODO: Implement the stuff below
     // - delta()
     // - filter()
     // Transformations to other types: DataFrame
