@@ -27,9 +27,7 @@ public class TestChronixSolrCloudStorageMock {
 
     @Test
     public void testMock() {
-        String file = this.getClass().getClassLoader().getResource(ConfigurationParams.DEFAULT_TESTDATA_FILE).getFile();
-        System.out.println("Reading file: " + file);
-        ChronixSolrCloudStorageMock mock = new ChronixSolrCloudStorageMock(file);
+        ChronixSolrCloudStorageMock mock = new ChronixSolrCloudStorageMock(ConfigurationParams.DEFAULT_TESTDATA_FILE);
         Stream<MetricTimeSeries> mtsStream = mock.streamFromSingleNode(null, null, null);
         long entries = mtsStream.count();
         System.out.println("Number of test time series:" + entries);

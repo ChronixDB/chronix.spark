@@ -32,8 +32,8 @@ public class MetricTimeSeriesKey implements Serializable {
 
     private static final long serialVersionUID = 42L;
 
-    private String metric;
-    private Map<String, Object> attributes = new HashMap<>();
+    private final String metric;
+    private final Map<String, Object> attributes;
 
     public MetricTimeSeriesKey(MetricTimeSeries mts) {
         this.metric = mts.getMetric();

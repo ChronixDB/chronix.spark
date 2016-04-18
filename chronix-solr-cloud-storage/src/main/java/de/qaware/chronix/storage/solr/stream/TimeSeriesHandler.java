@@ -35,7 +35,7 @@ public class TimeSeriesHandler<T> implements FutureCallback<T> {
     /**
      * The blocking queue containing elements of type t
      */
-    private BlockingQueue<T> queue;
+    private final BlockingQueue<T> queue;
 
     /**
      * Constructs a time series callback handler

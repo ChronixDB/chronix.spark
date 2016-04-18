@@ -26,7 +26,7 @@ import java.io.IOException;
  *
  * @author f.lautenschlager
  */
-public class Util {
+class Util {
 
     private Util() {
         //avoid instances

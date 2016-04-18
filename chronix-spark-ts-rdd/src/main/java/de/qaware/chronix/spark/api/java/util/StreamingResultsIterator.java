@@ -34,19 +34,18 @@ import java.util.concurrent.TimeUnit;
  */
 public class StreamingResultsIterator extends StreamingResponseCallback implements Iterator<SolrDocument>, Iterable<SolrDocument> {
 
-    protected SolrClient solrServer;
-    protected SolrQuery solrQuery;
-    protected int currentPageSize = 0;
-    protected int iterPos = 0;
-    protected long totalDocs = -1;
-    protected long numDocs = 0;
-    protected boolean usingCursors = false;
-    protected String nextCursorMark = null;
-    protected String cursorMarkOfCurrentPage = null;
-    protected boolean closeAfterIterating = false;
-    protected LinkedBlockingDeque<SolrDocument> queue;
-
-    private CountDownLatch docListInfoLatch = new CountDownLatch(1);
+    private final SolrClient solrServer;
+    private final SolrQuery solrQuery;
+    private int currentPageSize = 0;
+    private int iterPos = 0;
+    private long totalDocs = -1;
+    private long numDocs = 0;
+    private boolean usingCursors = false;
+    private String nextCursorMark = null;
+    private String cursorMarkOfCurrentPage = null;
+    private boolean closeAfterIterating = false;
+    private final LinkedBlockingDeque<SolrDocument> queue;
+    private final CountDownLatch docListInfoLatch = new CountDownLatch(1);
 
     public StreamingResultsIterator(SolrClient solrServer, SolrQuery solrQuery) {
         this(solrServer, solrQuery, null);
@@ -68,7 +67,7 @@ public class StreamingResultsIterator extends StreamingResponseCallback implemen
         if (totalDocs == 0 || (totalDocs != -1 && numDocs >= totalDocs))
             return false; // done iterating!
 
-        boolean hasNext = false;
+        boolean hasNext;
         if (totalDocs == -1 || iterPos == currentPageSize) {
             // call out to Solr to get next page
             try {
@@ -86,20 +85,21 @@ public class StreamingResultsIterator extends StreamingResponseCallback implemen
 
         if (!hasNext && closeAfterIterating) {
             try {
-                solrServer.shutdown();
+                solrServer.close();
             } catch (Exception exc) {
+                return false;
             }
         }
 
         return hasNext;
     }
 
-    protected int getStartForNextPage() {
+    private int getStartForNextPage() {
         Integer currentStart = solrQuery.getStart();
         return (currentStart != null) ? currentStart + solrQuery.getRows() : 0;
     }
 
-    protected boolean fetchNextPage() throws SolrServerException, InterruptedException {
+    private boolean fetchNextPage() throws SolrServerException, InterruptedException {
         int start = usingCursors ? 0 : getStartForNextPage();
         currentPageSize = solrQuery.getRows();
         this.cursorMarkOfCurrentPage = nextCursorMark;
@@ -127,7 +127,7 @@ public class StreamingResultsIterator extends StreamingResponseCallback implemen
         if (iterPos >= currentPageSize)
             throw new NoSuchElementException("No more docs available! Please call hasNext before calling next!");
 
-        SolrDocument next = null;
+        SolrDocument next;
         try {
             next = queue.poll(60, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

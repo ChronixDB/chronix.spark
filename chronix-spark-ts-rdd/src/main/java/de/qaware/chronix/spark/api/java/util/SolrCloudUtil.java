@@ -59,7 +59,7 @@ public class SolrCloudUtil {
     /**
      * Returns the list of shards of the default collection.
      *
-     * @param cloudSolrServer
+     * @param cloudSolrServer Solr Cloud client
      * @param chronixCollection Solr collection name for chronix time series data
      * @return the list of shards of the default collection
      */

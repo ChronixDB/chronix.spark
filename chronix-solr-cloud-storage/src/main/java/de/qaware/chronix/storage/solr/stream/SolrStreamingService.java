@@ -67,7 +67,7 @@ public class SolrStreamingService<T> implements Iterator<T> {
     /**
      * Query parameters
      */
-    private int nrOfTimeSeriesPerBatch;
+    private final int nrOfTimeSeriesPerBatch;
     private long nrOfAvailableTimeSeries = -1;
     private int currentDocumentCount = 0;
     /**

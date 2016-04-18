@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class ChronixSparkContext implements Serializable {
 
-    private transient JavaSparkContext jsc;
+    private final transient JavaSparkContext jsc;
 
     public ChronixSparkContext(JavaSparkContext jsc) {
         this.jsc = jsc;
@@ -103,18 +103,18 @@ public class ChronixSparkContext implements Serializable {
     /**
      * Low-level chunked query.
      *
-     * @param query
-     * @param zkHost
+     * @param query Solr query
+     * @param zkHost Zookeeper host
      * @param collection     the Solr collection of chronix time series data
      * @param chronixStorage a ChronixSolrCloudStorage instance
-     * @return
+     * @return ChronixRDD of time series (chunks)
      * @throws SolrServerException
      */
     public ChronixRDD queryChronix(
             final SolrQuery query,
             final String zkHost,
             final String collection,
-            final ChronixSolrCloudStorage chronixStorage) throws SolrServerException {
+            final ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage) throws SolrServerException {
         // first get a list of replicas to query for this collection
         CloudSolrClient cloudSolrClient = new CloudSolrClient(zkHost);
         cloudSolrClient.connect();
@@ -144,18 +144,18 @@ public class ChronixSparkContext implements Serializable {
      * MetrixTimeSeries Object. This method can be slow if the amount of
      * shuffeled data.
      *
-     * @param query
-     * @param zkHost
+     * @param query Solr query
+     * @param zkHost ZooKeeper host
      * @param collection     the Solr collection of chronix time series data
      * @param chronixStorage a ChronixSolrCloudStorage instance
-     * @return
+     * @return ChronixRDD of joined time series (without chunks)
      * @throws SolrServerException
      */
     public ChronixRDD query(
             final SolrQuery query,
             final String zkHost,
             final String collection,
-            final ChronixSolrCloudStorage chronixStorage) throws SolrServerException {
+            final ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage) throws SolrServerException {
 
         ChronixRDD rootRdd = queryChronix(query, zkHost, collection, chronixStorage);
 

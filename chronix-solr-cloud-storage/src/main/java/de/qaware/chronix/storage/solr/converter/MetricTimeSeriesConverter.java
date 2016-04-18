@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTimeSeries> {
 
-    public static final String METRIC = "metric";
+    private static final String METRIC = "metric";
     private static final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesConverter.class);
 
     @Override
