@@ -86,9 +86,6 @@ subprojects {
         //intelliJ Annotations
         compile 'com.intellij:annotations:12.0'
 
-        //Project Lombok
-        provided 'org.projectlombok:lombok:1.16.8'
-
         //Logging
         compile 'org.slf4j:slf4j-api:1.7.12'
 
