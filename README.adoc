@@ -18,13 +18,20 @@ low-level queries to perform predicate pushdown^.
 
 **How does Chronix Spark compare to Spark-TS?**
 
-Spark-TS provides no specific time series storage
+ * Spark-TS provides no specific time series storage
 it uses the Spark persistence mechanisms instead. This leads
 to a less efficient storage usage and less possibilities to
 perform performance optimizations via predicate pushdown.
 
-In contrast to Spark-TS Chronix does not align all
+ * In contrast to Spark-TS Chronix does not align all
 time series values on one vector of timestamps. This leads to
 greater flexibility in time series aggregation.
 
-Chronix provides multi-dimensional time series.
+ * Chronix provides multi-dimensional time series as this is very useful for data warehousing and APM.
+
+ * Chronix has support for Datasets as this will be an important Spark API in the near future. But Chronix
+ currently doesn't support an `IndexedRowMatrix` for SparkML.
+
+ * Chronix is purely written in Java. There is no explicit support for Python and Scala yet.
+
+ * Chronix doesn not support a ZonedTime as this makes it way more complicated.
