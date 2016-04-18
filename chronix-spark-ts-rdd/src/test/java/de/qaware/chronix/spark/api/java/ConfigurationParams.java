@@ -15,6 +15,10 @@
  */
 package de.qaware.chronix.spark.api.java;
 
+import de.qaware.chronix.spark.api.java.helpers.ChronixSolrCloudStorageMock;
+import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
+import de.qaware.chronix.timeseries.MetricTimeSeries;
+
 /**
  * Some common configuration for the test suite.
  */
@@ -29,4 +33,7 @@ public class ConfigurationParams {
     public static final String APP_NAME = "Spark Chronix";
 
     public static final String SOLR_REFERNCE_QUERY = "metric:\"java.lang:type=Memory/HeapMemoryUsage/used\"";
+    public static final String DEFAULT_TESTDATA_FILE = "timeseries-testdata.bin";
+
+    public static final ChronixSolrCloudStorage<MetricTimeSeries> STORAGE = new ChronixSolrCloudStorageMock();
 }

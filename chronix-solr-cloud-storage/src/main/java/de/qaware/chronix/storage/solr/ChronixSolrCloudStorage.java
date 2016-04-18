@@ -24,6 +24,7 @@ import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -33,9 +34,10 @@ import java.util.stream.StreamSupport;
 /**
  * @param <T> the type defining the returned type
  */
-public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrClient, SolrQuery> {
+public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrClient, SolrQuery>, Serializable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChronixSolrCloudStorage.class);
+    private static final long serialVersionUID = 42L;
+
     private final int nrOfDocumentPerBatch;
 
 
@@ -50,7 +52,7 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
 
     @Override
     public Stream<T> stream(TimeSeriesConverter<T> converter, CloudSolrClient connection, SolrQuery query) {
-        LOGGER.debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
+        LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
         SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
 
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
@@ -65,7 +67,7 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
      * @return a stream of time series
      */
     public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, SolrClient connection, SolrQuery query) {
-        LOGGER.debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
+        LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
         SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
 
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);

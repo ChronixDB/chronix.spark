@@ -15,22 +15,16 @@
  */
 package de.qaware.chronix.spark.api.java;
 
-import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions;
 import de.qaware.chronix.spark.api.java.timeseries.MetricObservation;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SQLContext;
 import org.junit.Test;
-
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
@@ -56,9 +50,12 @@ public class TestDataset implements Serializable {
 
             //Read data into ChronixRDD
             SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-            ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
+            ChronixRDD rdd = csc.queryChronix(query,
+                    ConfigurationParams.ZK_HOST,
+                    ConfigurationParams.CHRONIX_COLLECTION,
+                    ConfigurationParams.STORAGE);
 
-            //Transform ChronixRDD to DataFrame (will be moved to ChronixSparkContext later)
+            //Transform ChronixRDD to Dataset
             Dataset<MetricObservation> ds = rdd.toObservationsDataset(sqlContext);
             ds.cache();
             Dataset<MetricObservation> filteredDs = ds.filter(new FilterFunction<MetricObservation>() {

@@ -35,7 +35,7 @@ class TestChronixRDD extends Specification {
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         Iterator<MetricTimeSeries> it = rdd.iterator();
         int i = 0;
@@ -55,7 +55,7 @@ class TestChronixRDD extends Specification {
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         long start = System.currentTimeMillis();
         double mean = rdd.mean();
@@ -76,7 +76,7 @@ class TestChronixRDD extends Specification {
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         long start = System.currentTimeMillis();
         double mean = rdd.approxMean()
@@ -95,7 +95,7 @@ class TestChronixRDD extends Specification {
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         long count = rdd.countObservations()
         double max = rdd.max()
@@ -116,7 +116,7 @@ class TestChronixRDD extends Specification {
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SQLContext sqlContext = new SQLContext(sc);
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         DataFrame df = rdd.toDataFrame(sqlContext);
         df.show();

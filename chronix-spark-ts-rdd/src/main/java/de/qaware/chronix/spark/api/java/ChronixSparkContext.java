@@ -49,6 +49,7 @@ public class ChronixSparkContext implements Serializable {
         this.jsc = jsc;
     }
 
+
     /**
      * Returns the associated Spark Context.
      * As the ChronixSparkContext does not handle the Spark Context
@@ -105,13 +106,15 @@ public class ChronixSparkContext implements Serializable {
      * @param query
      * @param zkHost
      * @param collection the Solr collection of chronix time series data
+     * @param chronixStorage a ChronixSolrCloudStorage instance
      * @return
      * @throws SolrServerException
      */
     public ChronixRDD queryChronix(
             final SolrQuery query,
             final String zkHost,
-            final String collection) throws SolrServerException {
+            final String collection,
+            final ChronixSolrCloudStorage chronixStorage) throws SolrServerException {
         // first get a list of replicas to query for this collection
         CloudSolrClient cloudSolrClient = new CloudSolrClient(zkHost);
         cloudSolrClient.connect();
@@ -125,8 +128,6 @@ public class ChronixSparkContext implements Serializable {
         JavaRDD<MetricTimeSeries> docs = jsc.parallelize(shards, shards.size()).flatMap(
                 new FlatMapFunction<String, MetricTimeSeries>() {
                     public Iterable<MetricTimeSeries> call(String shardUrl) throws Exception {
-                        ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage
-                                = new ChronixSolrCloudStorage<MetricTimeSeries>(SolrCloudUtil.CHRONIX_DEFAULT_PAGESIZE);
                         return chronixStorage.streamFromSingleNode(
                                 new KassiopeiaSimpleConverter(),
                                 SolrCloudUtil.getSingleNodeSolrClient(shardUrl),
@@ -146,15 +147,17 @@ public class ChronixSparkContext implements Serializable {
      * @param query
      * @param zkHost
      * @param collection the Solr collection of chronix time series data
+     * @param chronixStorage a ChronixSolrCloudStorage instance
      * @return
      * @throws SolrServerException
      */
     public ChronixRDD query(
             final SolrQuery query,
             final String zkHost,
-            final String collection) throws SolrServerException {
+            final String collection,
+            final ChronixSolrCloudStorage chronixStorage) throws SolrServerException {
 
-        ChronixRDD rootRdd = queryChronix(query, zkHost, collection);
+        ChronixRDD rootRdd = queryChronix(query, zkHost, collection, chronixStorage);
 
         JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
                 = rootRdd.groupBy((MetricTimeSeries mts) -> {

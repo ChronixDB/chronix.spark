@@ -52,7 +52,7 @@ class TestChronixSparkContext extends Specification {
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY)
 
         when:
-        ChronixRDD result = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION)
+        ChronixRDD result = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
         then:
         List<MetricTimeSeries> timeSeries = result.take(5)
 
@@ -72,8 +72,8 @@ class TestChronixSparkContext extends Specification {
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY)
         when:
-        ChronixRDD resultChunked = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION)
-        ChronixRDD result = csc.query(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION)
+        ChronixRDD resultChunked = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
+        ChronixRDD result = csc.query(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
         then:
         long chunked = resultChunked.count()
         long joined = result.count()
