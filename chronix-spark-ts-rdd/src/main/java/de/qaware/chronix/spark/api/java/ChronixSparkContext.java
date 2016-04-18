@@ -18,14 +18,10 @@ package de.qaware.chronix.spark.api.java;
 import de.qaware.chronix.converter.KassiopeiaSimpleConverter;
 import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesKey;
 import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesOrdering;
-import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
-import de.qaware.chronix.spark.api.java.util.StreamingResultsIterator;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
-import org.apache.solr.common.SolrDocument;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -61,44 +57,6 @@ public class ChronixSparkContext implements Serializable {
         return jsc;
     }
 
-    /**
-     * Creates a JavaRDD of SolrDocuments for a Solr query.
-     *
-     * @param query      Solr query
-     * @param zkHost     ZooKeeper host URL
-     * @param collection the Solr collection of chronix time series data
-     * @return a JavaRDD of SolrDocuments as the Solr query result
-     * @throws SolrServerException
-     */
-    public JavaRDD<SolrDocument> querySolr(
-            final SolrQuery query,
-            final String zkHost,
-            final String collection) throws SolrServerException {
-        // first get a list of replicas to query for this collection
-        CloudSolrClient cloudSolrClient = new CloudSolrClient(zkHost);
-        cloudSolrClient.connect();
-        List<String> shards = SolrCloudUtil.buildShardList(cloudSolrClient, collection);
-
-        final SolrQuery enhancedQuery = query.getCopy();
-        // we'll be directing queries to each shard, so we don't want distributed
-        enhancedQuery.set("distrib", false);
-        enhancedQuery.set("collection", collection);
-        enhancedQuery.setStart(0);
-        if (enhancedQuery.getRows() == null)
-            enhancedQuery.setRows(SolrCloudUtil.CHRONIX_DEFAULT_PAGESIZE);
-        enhancedQuery.setSort(SolrQuery.SortClause.asc("id"));
-
-        // parallelize the requests to the shards
-        return jsc.parallelize(shards, shards.size()).flatMap(
-                new FlatMapFunction<String, SolrDocument>() {
-                    public Iterable<SolrDocument> call(String shardUrl) throws Exception {
-                        return new StreamingResultsIterator(
-                                SolrCloudUtil.getSingleNodeSolrClient(shardUrl),
-                                enhancedQuery, "*");
-                    }
-                }
-        );
-    }
 
     /**
      * Low-level chunked query.
@@ -115,10 +73,9 @@ public class ChronixSparkContext implements Serializable {
             final String zkHost,
             final String collection,
             final ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage) throws SolrServerException {
+
         // first get a list of replicas to query for this collection
-        CloudSolrClient cloudSolrClient = new CloudSolrClient(zkHost);
-        cloudSolrClient.connect();
-        List<String> shards = SolrCloudUtil.buildShardList(cloudSolrClient, collection);
+        List<String> shards = chronixStorage.getShardList(zkHost, collection);
 
         // we'll be directing queries to each shard, so we don't want distributed
         final SolrQuery enhQuery = query.getCopy();
@@ -130,7 +87,7 @@ public class ChronixSparkContext implements Serializable {
                     public Iterable<MetricTimeSeries> call(String shardUrl) throws Exception {
                         return chronixStorage.streamFromSingleNode(
                                 new KassiopeiaSimpleConverter(),
-                                SolrCloudUtil.getSingleNodeSolrClient(shardUrl),
+                                shardUrl,
                                 enhQuery
                         )::iterator;
                     }

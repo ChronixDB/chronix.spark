@@ -21,23 +21,28 @@ import de.qaware.chronix.streaming.StorageService;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.common.cloud.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
  * @param <T> the type defining the returned type
  */
-public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrClient, SolrQuery>, Serializable {
+public class ChronixSolrCloudStorage<T> implements Serializable {
 
     private static final long serialVersionUID = 42L;
 
     private final int nrOfDocumentPerBatch;
+
+    /**
+     * The default pagesize for paginations within Solr.
+     */
+    public static final int CHRONIX_DEFAULT_PAGESIZE = 1000;
 
 
     /**
@@ -49,8 +54,15 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
         this.nrOfDocumentPerBatch = nrOfDocumentPerBatch;
     }
 
-    @Override
-    public Stream<T> stream(TimeSeriesConverter<T> converter, CloudSolrClient connection, SolrQuery query) {
+    /**
+     * Constructs a Chronix storage with default paging size (batch size)
+     */
+    public ChronixSolrCloudStorage() {
+        this.nrOfDocumentPerBatch = CHRONIX_DEFAULT_PAGESIZE;
+    }
+
+    public Stream<T> stream(TimeSeriesConverter<T> converter, String zkHost, SolrQuery query) {
+        CloudSolrClient connection = new CloudSolrClient(zkHost);
         LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
         SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
 
@@ -61,20 +73,83 @@ public class ChronixSolrCloudStorage<T> implements StorageService<T, CloudSolrCl
      * Fetches a stream of time series only from a single node.
      *
      * @param converter  the time series type converter
-     * @param connection the solr client connection to a single solr server
+     * @param shardUrl the URL of the shard pointing to a single node
      * @param query      the solr query
      * @return a stream of time series
      */
-    public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, SolrClient connection, SolrQuery query) {
-        LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
-        SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
-
+    public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, String shardUrl, SolrQuery query) {
+        HttpSolrClient solrClient = getSingleNodeSolrClient(shardUrl);
+        LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, solrClient, query);
+        SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, solrClient, nrOfDocumentPerBatch);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
     }
 
-
-    @Override
     public boolean add(TimeSeriesConverter<T> converter, Collection<T> documents, CloudSolrClient connection) {
         throw new UnsupportedOperationException();
     }
+
+    /**
+     * Returns a connection to a single Solr node by shard URL.
+     *
+     * @param shardUrl the url of the solr endpoint where the shard resides
+     * @return a connection to a single Solr node within a Solr Cloud
+     */
+    private HttpSolrClient getSingleNodeSolrClient(String shardUrl) {
+        return new HttpSolrClient(shardUrl);
+    }
+
+    /**
+     * Returns the list of shards of the default collection.
+     *
+     * @param zkHost ZooKeeper URL
+     * @param chronixCollection Solr collection name for chronix time series data
+     * @return the list of shards of the default collection
+     */
+    public List<String> getShardList(String zkHost, String chronixCollection) {
+
+        CloudSolrClient cloudSolrClient = new CloudSolrClient(zkHost);
+        cloudSolrClient.connect();
+
+        ZkStateReader zkStateReader = cloudSolrClient.getZkStateReader();
+
+        ClusterState clusterState = zkStateReader.getClusterState();
+
+        String[] collections;
+        if (clusterState.hasCollection(chronixCollection)) {
+            collections = new String[]{chronixCollection};
+        } else {
+            // might be a collection alias?
+            Aliases aliases = zkStateReader.getAliases();
+            String aliasedCollections = aliases.getCollectionAlias(chronixCollection);
+            if (aliasedCollections == null)
+                throw new IllegalArgumentException("Collection " + chronixCollection + " not found!");
+            collections = aliasedCollections.split(",");
+        }
+
+        Set<String> liveNodes = clusterState.getLiveNodes();
+        Random random = new Random(5150);
+
+        List<String> shards = new ArrayList<>();
+        for (String coll : collections) {
+            for (Slice slice : clusterState.getSlices(coll)) {
+                List<String> replicas = new ArrayList<>();
+                for (Replica r : slice.getReplicas()) {
+                    if (r.getState().equals(Replica.State.ACTIVE)) {
+                        ZkCoreNodeProps replicaCoreProps = new ZkCoreNodeProps(r);
+                        if (liveNodes.contains(replicaCoreProps.getNodeName()))
+                            replicas.add(replicaCoreProps.getCoreUrl());
+                    }
+                }
+                int numReplicas = replicas.size();
+                if (numReplicas == 0)
+                    throw new IllegalStateException("Shard " + slice.getName() + " in collection " +
+                            coll + " does not have any active replicas!");
+
+                String replicaUrl = (numReplicas == 1) ? replicas.get(0) : replicas.get(random.nextInt(replicas.size()));
+                shards.add(replicaUrl);
+            }
+        }
+        return shards;
+    }
+
 }

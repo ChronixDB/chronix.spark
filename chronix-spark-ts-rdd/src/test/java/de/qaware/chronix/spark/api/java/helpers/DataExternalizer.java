@@ -20,7 +20,6 @@ import com.esotericsoftware.kryo.io.Output;
 import de.qaware.chronix.spark.api.java.ChronixRDD;
 import de.qaware.chronix.spark.api.java.ChronixSparkContext;
 import de.qaware.chronix.spark.api.java.ConfigurationParams;
-import de.qaware.chronix.spark.api.java.util.SolrCloudUtil;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.commons.collections.IteratorUtils;
@@ -72,7 +71,7 @@ public class DataExternalizer {
             ChronixRDD rdd = csc.queryChronix(query,
                     ConfigurationParams.ZK_HOST,
                     ConfigurationParams.CHRONIX_COLLECTION,
-                    new ChronixSolrCloudStorage<MetricTimeSeries>(SolrCloudUtil.CHRONIX_DEFAULT_PAGESIZE));
+                    new ChronixSolrCloudStorage<MetricTimeSeries>(ChronixSolrCloudStorage.CHRONIX_DEFAULT_PAGESIZE));
             System.out.println("Writing " + rdd.count() + " time series into test data file.");
 
             //Loop through result and serialize it to disk

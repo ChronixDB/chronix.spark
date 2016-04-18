@@ -58,12 +58,12 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
     }
 
     @Override
-    public Stream<MetricTimeSeries> stream(TimeSeriesConverter<MetricTimeSeries> converter, CloudSolrClient connection, SolrQuery query) {
+    public Stream<MetricTimeSeries> stream(TimeSeriesConverter<MetricTimeSeries> converter, String zkHost, SolrQuery query) {
         return readTestData();
     }
 
     @Override
-    public Stream<MetricTimeSeries> streamFromSingleNode(TimeSeriesConverter<MetricTimeSeries> converter, SolrClient connection, SolrQuery query) {
+    public Stream<MetricTimeSeries> streamFromSingleNode(TimeSeriesConverter<MetricTimeSeries> converter, String shardUrl, SolrQuery query) {
         return readTestData();
     }
 
@@ -83,4 +83,12 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
     public boolean add(TimeSeriesConverter<MetricTimeSeries> converter, Collection<MetricTimeSeries> documents, CloudSolrClient connection) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public List<String> getShardList(String zkHost, String chronixCollection) {
+        List<String> shards = new ArrayList<String>(1);
+        shards.add("http://dummy.solr/ONLY_ONE_TEST_SHARD");
+        return shards;
+    }
+
 }

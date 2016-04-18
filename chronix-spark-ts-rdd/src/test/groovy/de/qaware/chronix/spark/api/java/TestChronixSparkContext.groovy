@@ -26,22 +26,6 @@ import spock.lang.Specification
 
 class TestChronixSparkContext extends Specification {
 
-
-    def "testSolrQuery"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc)
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY)
-        when:
-        JavaRDD<SolrDocument> result = csc.querySolr(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION)
-        then:
-        List<SolrDocument> docs = result.take(1)
-        docs.size() == 1
-        cleanup:
-        sc.close()
-    }
-
     def "testChronixQuery"() {
         given:
         SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
@@ -82,7 +66,6 @@ class TestChronixSparkContext extends Specification {
             //TODO: check ordering in time series
             //TODO: check duplicates according time series identity (and eliminate the assert below which is fragile)
         }
-
         Assert.assertTrue(resultChunked.count() >= result.count())
         cleanup:
         sc.close()
