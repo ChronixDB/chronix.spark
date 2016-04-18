@@ -16,13 +16,21 @@
 package de.qaware.chronix.spark.api.java.timeseries;
 
 import de.qaware.chronix.timeseries.MetricTimeSeries;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents the identity of a MetricTimeSeries.
+ * The identity is expressed as
+ */
 public class MetricTimeSeriesKey implements Serializable {
+
+    private static final long serialVersionUID = 42L;
 
     private String metric;
     private Map<String, Object> attributes = new HashMap<>();
@@ -37,7 +45,7 @@ public class MetricTimeSeriesKey implements Serializable {
     }
 
     public Map<String, Object> getAttributes() {
-        return attributes;
+        return Collections.unmodifiableMap(attributes);
     }
 
     @Override
@@ -47,31 +55,23 @@ public class MetricTimeSeriesKey implements Serializable {
 
         MetricTimeSeriesKey that = (MetricTimeSeriesKey) o;
 
-        //TODO: make identity function on key more flexible (& use EqualsBuilder)
-        if (!metric.equals(that.metric)) return false;
-        if (!equalsAttributes(that, "host")) return false;
-        if (!equalsAttributes(that, "series")) return false;
-        if (!equalsAttributes(that, "process")) return false;
-        if (!equalsAttributes(that, "group")) return false;
-        if (!equalsAttributes(that, "ag")) return false;
-        return true;
-    }
-
-    private boolean equalsAttributes(MetricTimeSeriesKey that,
-                                     String attribute) {
-        Object oKey = this.attributes.get(attribute);
-        Object thatKey = that.attributes.get(attribute);
-        if (oKey == null) return false;
-        else return oKey.equals(thatKey);
+        EqualsBuilder eb = new EqualsBuilder();
+        for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
+            if (dim == MetricDimensions.METRIC) eb.append(this.metric, that.metric);
+            else eb.append(this.attributes.get(dim.getId()), that.attributes.get(dim.getId()));
+        }
+        return eb.isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(attributes.get("host"))
-                .append(attributes.get("series"))
-                .append(attributes.get("process"))
-                .append(attributes.get("group"))
-                .append(attributes.get("ag")).toHashCode();
+        HashCodeBuilder hb = new HashCodeBuilder(17, 37);
+
+        for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
+            if (dim == MetricDimensions.METRIC) hb.append(this.metric);
+            else hb.append(this.attributes.get(dim.getId()));
+        }
+
+        return hb.toHashCode();
     }
 }
