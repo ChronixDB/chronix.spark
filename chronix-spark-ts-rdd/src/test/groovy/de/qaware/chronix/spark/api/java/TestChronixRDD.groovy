@@ -15,23 +15,27 @@
  */
 package de.qaware.chronix.spark.api.java
 
+import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions
 import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SQLContext
 import spock.lang.Ignore
 import spock.lang.Specification
 
+import static org.junit.Assert.assertTrue
+
 class TestChronixRDD extends Specification {
 
-    @Ignore
     def "test iterator"() {
         given:
         SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD");
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST);
+        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
         when:
         Iterator<MetricTimeSeries> it = rdd.iterator();
         int i = 0;
@@ -45,14 +49,13 @@ class TestChronixRDD extends Specification {
         sc.close()
     }
 
-    @Ignore
     def "test mean"() {
         given:
         SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD");
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST);
+        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
         when:
         long start = System.currentTimeMillis();
         double mean = rdd.mean();
@@ -67,14 +70,13 @@ class TestChronixRDD extends Specification {
         sc.close()
     }
 
-    @Ignore
     def "test approx. mean"() {
         given:
         SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD");
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST);
+        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
         when:
         long start = System.currentTimeMillis();
         double mean = rdd.approxMean()
@@ -87,14 +89,13 @@ class TestChronixRDD extends Specification {
         sc.close()
     }
 
-    @Ignore
     def "test scalar actions"() {
         given:
         SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf)
         ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery("metric:\"MXBean(java.lang:type=Memory).NonHeapMemoryUsage.used\" AND type:RECORD");
-        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST);
+        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
         when:
         long count = rdd.countObservations()
         double max = rdd.max()
@@ -104,6 +105,31 @@ class TestChronixRDD extends Specification {
         println "Min: " + min
         then:
         count > 0
+        cleanup:
+        sc.close()
+    }
+
+    def "test data frame"() {
+        given:
+        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
+        JavaSparkContext sc = new JavaSparkContext(conf)
+        ChronixSparkContext csc = new ChronixSparkContext(sc);
+        SQLContext sqlContext = new SQLContext(sc);
+        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+        ChronixRDD rdd = csc.queryChronix(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION);
+        when:
+        DataFrame df = rdd.toDataFrame(sqlContext);
+        df.show();
+        then:
+        //Assert that all columns are available
+        List<String> columns = Arrays.asList(df.columns());
+        assertTrue( columns.contains("timestamp") );
+        assertTrue( columns.contains("value") );
+        for (MetricDimensions dim : MetricDimensions.values()){
+            assertTrue( columns.contains(dim.getId()) );
+        }
+        //Assert that DataFrame is not empty
+        assertTrue ( df.count() > 0 );
         cleanup:
         sc.close()
     }

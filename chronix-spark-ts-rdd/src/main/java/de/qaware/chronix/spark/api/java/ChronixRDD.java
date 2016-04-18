@@ -15,25 +15,38 @@
  */
 package de.qaware.chronix.spark.api.java;
 
+import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions;
+import de.qaware.chronix.spark.api.java.timeseries.MetricObservation;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.timeseries.dt.Point;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.DoubleFlatMapFunction;
 import org.apache.spark.api.java.function.DoubleFunction;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.SQLContext;
 import scala.reflect.ClassTag$;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.function.Function;
 
 /**
  * ChronixRDD: A time series implementation based on Chronix.
  *
- * The RDD represents a set of time series. The unit of parallelization
- * is one time series.
+ * The RDD represents a set of time series - the unit of parallelization
+ * is one time series. A ChronixRDD can be created by and is bound to
+ * a ChronixSparkContext.
  *
- * The RDD contains time series specific actions and transformations.
+ * The RDD contains time series specific actions and transformations. For
+ * query purposes please use ChronixSparkContext as only the Context can
+ * perform predicate / aggregation pushdown right now.
  *
+ * @see ChronixSparkContext
  */
 public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
 
@@ -57,7 +70,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @return mean value over all contained time series.
      */
     public double mean() {
-        return getValuesAsRdd().mean().doubleValue();
+        return getValuesAsRdd().mean();
     }
 
     /**
@@ -75,7 +88,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @return min value over all contained time series.
      */
     public double min() {
-        return getValuesAsRdd().min().doubleValue();
+        return getValuesAsRdd().min();
     }
 
     /**
@@ -84,7 +97,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @return max value over all contained time series.
      */
     public double max() {
-        return getValuesAsRdd().max().doubleValue();
+        return getValuesAsRdd().max();
     }
 
     /**
@@ -118,11 +131,77 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
         return sizesRdd.sum().longValue();
     }
 
-    //TODO:
-    // - delta()
-    // - filter()
-    // Transformations to other types: DataFrame
-    // - easy additional functions based on DoubleRDD (esp. stats & approx)
-    // - see TimeSeriesRDD
-    // - see Kassiopeia TimeSeries POJO
+    /**
+     * Transformation: Transforms the ChronixRDD into a RDD of MetricObservations (pair of timestamp & value + dimensions).
+     *
+     * @return RDD of MetricObservations
+     */
+    public JavaRDD<MetricObservation> toObservations() {
+        return this.flatMap(new FlatMapFunction<MetricTimeSeries, MetricObservation>(){
+
+            @Override
+            public Iterable<MetricObservation> call(MetricTimeSeries ts) throws Exception {
+                return ts.points().map( new Function<Point, MetricObservation>() {
+                    @Override
+                    public MetricObservation apply(Point point) {
+                        //null-safe read of dimensional values
+                        String host = ts.attributes().get(MetricDimensions.HOST.getId()) == null ? null
+                                : ts.attributes().get(MetricDimensions.HOST.getId()).toString();
+                        String series = ts.attributes().get(MetricDimensions.MEASUREMENT_SERIES.getId()) == null ? null
+                                : ts.attributes().get(MetricDimensions.MEASUREMENT_SERIES.getId()).toString();
+                        String process = ts.attributes().get(MetricDimensions.PROCESS.getId()) == null ? null
+                                : ts.attributes().get(MetricDimensions.PROCESS.getId()).toString();
+                        String group = ts.attributes().get(MetricDimensions.METRIC_GROUP.getId()) == null ? null
+                                : ts.attributes().get(MetricDimensions.METRIC_GROUP.getId()).toString();
+                        String ag = ts.attributes().get(MetricDimensions.AGGREGATION_LEVEL.getId()) == null ? null
+                                : ts.attributes().get(MetricDimensions.AGGREGATION_LEVEL.getId()).toString();
+                        //convert Point/MetricTimeSeries to MetricObservation
+                        return new MetricObservation(
+                                ts.getMetric(),
+                                host, series, process, group, ag,
+                                point.getTimestamp(),
+                                point.getValue()
+                        );
+                    }
+                })::iterator;
+            }
+        });
+    }
+
+    /**
+     * Transformation: Derives a Spark SQL DataFrame from a ChronixRDD.
+     *
+     * The DataFrame contains the following columns:
+     * <ul>
+     *   <li>for each dimension (@see: de.qaware.chronix.spark.api.java.timeseries.MetricDimensions) one column</li>
+     *   <li>one column for the observations' timestamp</li>
+     *   <li>one column for the measurement value at the observation timestamp</li>
+     *  </ul>
+     *
+     * @param sqlContext an open SQLContext
+     * @return a DataFrame containing the ChronixRDD data
+     */
+    public DataFrame toDataFrame(SQLContext sqlContext) {
+        return sqlContext.createDataFrame(
+                this.toObservations(),
+                MetricObservation.class
+        );
+    }
+
+    /**
+     * Transformation: Derives a Spark Dataset of observations from a ChronixRDD.
+     *
+     * WARNING: The Dataset-API is currently not stable. So this is an experimental feature on Chronix Spark.
+     * We've flagged it deprecated to express its experimental nature (which is semantically symmetric to legacy methods).
+     * More on the Datasets API here:
+     * <a href="https://databricks.com/blog/2016/01/04/introducing-spark-datasets.html">databricks Blog: Introducing Spark Datasets (4/1/2016)</a>.
+     *
+     * @deprecated
+     * @param sqlContext an open SQLContext
+     * @return a Dataset of MetricObservations
+     */
+    public Dataset<MetricObservation> toObservationsDataset(SQLContext sqlContext) {
+        return sqlContext.createDataset(this.toObservations().rdd(), Encoders.bean(MetricObservation.class));
+    }
+
 }
