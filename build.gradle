@@ -81,7 +81,13 @@ subprojects {
 
     dependencies {
         //Guava
-        compile 'com.google.guava:guava:18.0'
+        compile 'com.google.guava:guava:19.0'
+
+        //intelliJ Annotations
+        compile 'com.intellij:annotations:12.0'
+
+        //Project Lombok
+        provided 'org.projectlombok:lombok:1.16.8'
 
         //Logging
         compile 'org.slf4j:slf4j-api:1.7.12'
@@ -91,6 +97,7 @@ subprojects {
         testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
         testCompile 'cglib:cglib-nodep:3.2.0'
         testCompile 'org.objenesis:objenesis:2.2'
+
         //Logging framework for tests
         testCompile 'org.apache.logging.log4j:log4j-api:2.4'
         testCompile 'org.apache.logging.log4j:log4j-core:2.4'
