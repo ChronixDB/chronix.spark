@@ -36,14 +36,11 @@ import java.util.Set;
 /**
  * Collection of some static utility methods to ease usage of
  * Solr Cloud within Chronix Spark.
+ *
+ * Heavily inspired by and copy &amp; pasted from <a href="https://github.com/lucidworks/spark-solr">spark-solr</a> in
+ * an earlier version. Kudos to Lucidworks!
  */
 public class SolrCloudUtil {
-
-    /**
-     * The default Solr collection for time series data.
-     * Defaul name is Chronix-wide "ekgdata" due to historical reasons.
-     */
-    public static final String CHRONIX_COLLECTION = "ekgdata";
 
     /**
      * The default pagesize for paginations within Solr.
@@ -53,44 +50,44 @@ public class SolrCloudUtil {
     /**
      * Returns a connection to a single Solr node by shard URL.
      *
-     * @param shardUrl
+     * @param shardUrl the url of the solr endpoint where the shard resides
      * @return a connection to a single Solr node within a Solr Cloud
      */
     public static HttpSolrClient getSingleNodeSolrClient(String shardUrl){
-        HttpSolrClient hsc = new HttpSolrClient(shardUrl);
-        return hsc;
+        return new HttpSolrClient(shardUrl);
     }
 
     /**
      * Returns the list of shards of the default collection.
      *
      * @param cloudSolrServer
+     * @param chronixCollection Solr collection name for chronix time series data
      * @return the list of shards of the default collection
      */
-    public static List<String> buildShardList(CloudSolrClient cloudSolrServer) {
+    public static List<String> buildShardList(CloudSolrClient cloudSolrServer, String chronixCollection) {
         ZkStateReader zkStateReader = cloudSolrServer.getZkStateReader();
 
         ClusterState clusterState = zkStateReader.getClusterState();
 
-        String[] collections = null;
-        if (clusterState.hasCollection(CHRONIX_COLLECTION)) {
-            collections = new String[]{CHRONIX_COLLECTION};
+        String[] collections;
+        if (clusterState.hasCollection(chronixCollection)) {
+            collections = new String[]{chronixCollection};
         } else {
             // might be a collection alias?
             Aliases aliases = zkStateReader.getAliases();
-            String aliasedCollections = aliases.getCollectionAlias(CHRONIX_COLLECTION);
+            String aliasedCollections = aliases.getCollectionAlias(chronixCollection);
             if (aliasedCollections == null)
-                throw new IllegalArgumentException("Collection " + CHRONIX_COLLECTION + " not found!");
+                throw new IllegalArgumentException("Collection " + chronixCollection + " not found!");
             collections = aliasedCollections.split(",");
         }
 
         Set<String> liveNodes = clusterState.getLiveNodes();
         Random random = new Random(5150);
 
-        List<String> shards = new ArrayList<String>();
+        List<String> shards = new ArrayList<>();
         for (String coll : collections) {
             for (Slice slice : clusterState.getSlices(coll)) {
-                List<String> replicas = new ArrayList<String>();
+                List<String> replicas = new ArrayList<>();
                 for (Replica r : slice.getReplicas()) {
                     if (r.getState().equals(Replica.State.ACTIVE)) {
                         ZkCoreNodeProps replicaCoreProps = new ZkCoreNodeProps(r);
@@ -113,11 +110,11 @@ public class SolrCloudUtil {
     /**
      * Performs a Solr query.
      *
-     * @param solrServer
-     * @param solrQuery
-     * @param startIndex
-     * @param cursorMark
-     * @return
+     * @param solrServer the solr client to a single solr server
+     * @param solrQuery the solr query
+     * @param startIndex the index to start the result
+     * @param cursorMark the result cursor mark
+     * @return a solr query response
      * @throws SolrServerException
      */
     public static QueryResponse querySolr(SolrClient solrServer, SolrQuery solrQuery, int startIndex, String cursorMark) throws SolrServerException {
@@ -127,16 +124,16 @@ public class SolrCloudUtil {
     /**
      * Performs a Solr query.
      *
-     * @param solrServer
-     * @param solrQuery
-     * @param startIndex
-     * @param cursorMark
-     * @param callback
-     * @return
+     * @param solrServer the solr client to a single solr server
+     * @param solrQuery the solr query
+     * @param startIndex the index to start the result
+     * @param cursorMark the result cursor mark
+     * @param callback a callback object for streaming result handling
+     * @return a solr query response
      * @throws SolrServerException
      */
     public static QueryResponse querySolr(SolrClient solrServer, SolrQuery solrQuery, int startIndex, String cursorMark, StreamingResponseCallback callback) throws SolrServerException {
-        QueryResponse resp = null;
+        QueryResponse resp;
         try {
             if (cursorMark != null) {
                 solrQuery.setStart(0);
@@ -151,16 +148,11 @@ public class SolrCloudUtil {
                 resp = solrServer.query(solrQuery);
             }
         } catch (Exception exc) {
-
-            //TODO
-            //log.error("Query ["+solrQuery+"] failed due to: "+exc);
-
             // re-try once in the event of a communications error with the server
             Throwable rootCause = SolrException.getRootCause(exc);
             boolean wasCommError =
                     (rootCause instanceof ConnectException ||
-                            rootCause instanceof IOException ||
-                            rootCause instanceof SocketException);
+                            rootCause instanceof IOException);
             if (wasCommError) {
                 try {
                     Thread.sleep(2000L);
