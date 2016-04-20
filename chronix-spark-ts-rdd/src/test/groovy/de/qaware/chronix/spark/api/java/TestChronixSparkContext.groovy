@@ -20,17 +20,28 @@ import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext
 import org.junit.Assert
+import spock.lang.Shared
 import spock.lang.Specification
 
 class TestChronixSparkContext extends Specification {
 
-    def "testChronixQuery"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY)
+    @Shared
+    SparkConf conf
+    @Shared
+    JavaSparkContext sc
+    @Shared
+    ChronixSparkContext csc
+    @Shared
+    SolrQuery query
 
+    def setup() {
+        conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
+        sc = new JavaSparkContext(conf)
+        csc = new ChronixSparkContext(sc);
+        query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY)
+    }
+
+    def "testChronixQuery"() {
         when:
         ChronixRDD result = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
         then:
@@ -46,11 +57,6 @@ class TestChronixSparkContext extends Specification {
     }
 
     def "testQuery"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY)
         when:
         ChronixRDD resultChunked = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
         ChronixRDD result = csc.query(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
