@@ -42,6 +42,7 @@ class TestChronixRDD extends Specification {
 
     def setup() {
         conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
+        conf.set("spark.driver.allowMultipleContexts", "true")
         sc = new JavaSparkContext(conf)
         csc = new ChronixSparkContext(sc);
         query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
