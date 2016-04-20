@@ -22,19 +22,33 @@ import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SQLContext
+import spock.lang.Shared
 import spock.lang.Specification
 
 import static org.junit.Assert.assertTrue
 
 class TestChronixRDD extends Specification {
 
+    @Shared
+    SparkConf conf
+    @Shared
+    JavaSparkContext sc
+    @Shared
+    ChronixSparkContext csc
+    @Shared
+    SolrQuery query
+    @Shared
+    ChronixRDD rdd
+
+    def setup() {
+        conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
+        sc = new JavaSparkContext(conf)
+        csc = new ChronixSparkContext(sc);
+        query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+        rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
+    }
+
     def "test iterator"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         Iterator<MetricTimeSeries> it = rdd.iterator();
         int i = 0;
@@ -49,12 +63,6 @@ class TestChronixRDD extends Specification {
     }
 
     def "test mean"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         long start = System.currentTimeMillis();
         double mean = rdd.mean();
@@ -70,12 +78,6 @@ class TestChronixRDD extends Specification {
     }
 
     def "test approx. mean"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         long start = System.currentTimeMillis();
         double mean = rdd.approxMean()
@@ -89,12 +91,6 @@ class TestChronixRDD extends Specification {
     }
 
     def "test scalar actions"() {
-        given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         long count = rdd.countObservations()
         double max = rdd.max()
@@ -110,12 +106,7 @@ class TestChronixRDD extends Specification {
 
     def "test data frame"() {
         given:
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        JavaSparkContext sc = new JavaSparkContext(conf)
-        ChronixSparkContext csc = new ChronixSparkContext(sc);
         SQLContext sqlContext = new SQLContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
         when:
         DataFrame df = rdd.toDataFrame(sqlContext);
         df.show();
