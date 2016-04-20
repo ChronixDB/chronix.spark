@@ -42,6 +42,8 @@ public class TestISAXAnalysis implements Serializable {
     @Test
     public void performISAXAnalysis() throws SolrServerException {
         SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
+        conf.set("spark.driver.allowMultipleContexts", "true");
+
         JavaSparkContext sc = new JavaSparkContext(conf);
         ChronixSparkContext csc = new ChronixSparkContext(sc);
         SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
