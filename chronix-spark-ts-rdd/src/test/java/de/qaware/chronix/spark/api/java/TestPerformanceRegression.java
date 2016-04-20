@@ -48,6 +48,8 @@ public class TestPerformanceRegression {
     public static void main(String[] args) throws SolrServerException {
         //Create Spark context
         SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
+        conf.set("spark.driver.allowMultipleContexts", "true");
+
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         try {
