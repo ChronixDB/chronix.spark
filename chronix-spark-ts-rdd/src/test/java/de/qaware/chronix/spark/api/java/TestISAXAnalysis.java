@@ -16,16 +16,15 @@
 package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.timeseries.MetricTimeSeries;
-import de.qaware.chronix.timeseries.dt.Point;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -40,14 +39,11 @@ public class TestISAXAnalysis implements Serializable {
      * @throws SolrServerException
      */
     @Test
-    public void performISAXAnalysis() throws SolrServerException {
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        conf.set("spark.driver.allowMultipleContexts", "true");
-
-        JavaSparkContext sc = new JavaSparkContext(conf);
+    public void performISAXAnalysis() throws SolrServerException, IOException {
+        JavaSparkContext sc = SparkConfiguration.createSparkContext();
         ChronixSparkContext csc = new ChronixSparkContext(sc);
-        SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        ChronixRDD rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
+        SolrQuery query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY);
+        ChronixRDD rdd = csc.queryChronixChunks(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE);
         JavaRDD<Double> slopes = rdd.map(new Function<MetricTimeSeries, Double>() {
 
                     @Override

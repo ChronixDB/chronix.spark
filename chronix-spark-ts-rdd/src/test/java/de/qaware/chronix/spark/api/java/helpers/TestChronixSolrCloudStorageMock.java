@@ -15,7 +15,7 @@
  */
 package de.qaware.chronix.spark.api.java.helpers;
 
-import de.qaware.chronix.spark.api.java.ConfigurationParams;
+import de.qaware.chronix.spark.api.java.SparkConfiguration;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.junit.Test;
 
@@ -27,7 +27,7 @@ public class TestChronixSolrCloudStorageMock {
 
     @Test
     public void testMock() {
-        ChronixSolrCloudStorageMock mock = new ChronixSolrCloudStorageMock(ConfigurationParams.DEFAULT_TESTDATA_FILE);
+        ChronixSolrCloudStorageMock mock = new ChronixSolrCloudStorageMock(SparkConfiguration.DEFAULT_TESTDATA_FILE);
         Stream<MetricTimeSeries> mtsStream = mock.streamFromSingleNode(null, null, null);
         long entries = mtsStream.count();
         System.out.println("Number of test time series:" + entries);

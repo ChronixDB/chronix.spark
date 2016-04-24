@@ -20,11 +20,11 @@ import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SQLContext;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 
@@ -45,12 +45,9 @@ public class TestPerformanceRegression {
      * first attempt            : 9,603ms
      * with rdd.cache()         : 8,223ms
      */
-    public static void main(String[] args) throws SolrServerException {
+    public static void main(String[] args) throws SolrServerException, IOException {
         //Create Spark context
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        conf.set("spark.driver.allowMultipleContexts", "true");
-
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sc = SparkConfiguration.createSparkContext();
 
         try {
             //Create Chronix Spark context
@@ -65,10 +62,10 @@ public class TestPerformanceRegression {
             for (int i = 0; i < LOOPS; i++) {
 
                 //Read data into ChronixRDD
-                SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+                SolrQuery query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY);
                 ChronixRDD rdd = csc.queryChronixChunks(query,
-                        ConfigurationParams.ZK_HOST,
-                        ConfigurationParams.CHRONIX_COLLECTION,
+                        SparkConfiguration.ZK_HOST,
+                        SparkConfiguration.CHRONIX_COLLECTION,
                         new ChronixSolrCloudStorage());
                 rdd.cache();
 

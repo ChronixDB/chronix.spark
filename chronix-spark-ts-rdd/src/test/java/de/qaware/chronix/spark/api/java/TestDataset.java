@@ -18,13 +18,13 @@ package de.qaware.chronix.spark.api.java;
 import de.qaware.chronix.spark.api.java.timeseries.MetricObservation;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SQLContext;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import static org.junit.Assert.assertTrue;
@@ -37,12 +37,9 @@ public class TestDataset implements Serializable {
     private static final long serialVersionUID = 42L;
 
     @Test
-    public void testDatasetCreationWithObservations() throws SolrServerException {
+    public void testDatasetCreationWithObservations() throws SolrServerException, IOException {
         //Create Spark context
-        SparkConf conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME);
-        conf.set("spark.driver.allowMultipleContexts", "true");
-
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sc = SparkConfiguration.createSparkContext();
 
         try {
             //Create Chronix Spark context
@@ -52,11 +49,11 @@ public class TestDataset implements Serializable {
             SQLContext sqlContext = new SQLContext(sc);
 
             //Read data into ChronixRDD
-            SolrQuery query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
+            SolrQuery query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY);
             ChronixRDD rdd = csc.queryChronixChunks(query,
-                    ConfigurationParams.ZK_HOST,
-                    ConfigurationParams.CHRONIX_COLLECTION,
-                    ConfigurationParams.STORAGE);
+                    SparkConfiguration.ZK_HOST,
+                    SparkConfiguration.CHRONIX_COLLECTION,
+                    SparkConfiguration.STORAGE);
 
             //Transform ChronixRDD to Dataset
             Dataset<MetricObservation> ds = rdd.toObservationsDataset(sqlContext);

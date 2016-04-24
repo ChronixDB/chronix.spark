@@ -35,16 +35,14 @@ class TestChronixSparkContext extends Specification {
     SolrQuery query
 
     def setup() {
-        conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
-        conf.set("spark.driver.allowMultipleContexts", "true")
-        sc = new JavaSparkContext(conf)
+        sc = SparkConfiguration.createSparkContext();
         csc = new ChronixSparkContext(sc);
-        query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY)
+        query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY)
     }
 
     def "testChronixQuery"() {
         when:
-        ChronixRDD result = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
+        ChronixRDD result = csc.queryChronixChunks(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE)
         then:
         List<MetricTimeSeries> timeSeries = result.take(5)
 
@@ -59,8 +57,8 @@ class TestChronixSparkContext extends Specification {
 
     def "testQuery"() {
         when:
-        ChronixRDD resultChunked = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
-        ChronixRDD result = csc.query(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE)
+        ChronixRDD resultChunked = csc.queryChronixChunks(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE)
+        ChronixRDD result = csc.query(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE)
         then:
         long chunked = resultChunked.count()
         long joined = result.count()

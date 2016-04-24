@@ -41,12 +41,10 @@ class TestChronixRDD extends Specification {
     ChronixRDD rdd
 
     def setup() {
-        conf = new SparkConf().setMaster(ConfigurationParams.SPARK_MASTER).setAppName(ConfigurationParams.APP_NAME)
-        conf.set("spark.driver.allowMultipleContexts", "true")
-        sc = new JavaSparkContext(conf)
+        sc = SparkConfiguration.createSparkContext();
         csc = new ChronixSparkContext(sc);
-        query = new SolrQuery(ConfigurationParams.SOLR_REFERNCE_QUERY);
-        rdd = csc.queryChronixChunks(query, ConfigurationParams.ZK_HOST, ConfigurationParams.CHRONIX_COLLECTION, ConfigurationParams.STORAGE);
+        query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY);
+        rdd = csc.queryChronixChunks(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE);
     }
 
     def "test iterator"() {

@@ -18,10 +18,9 @@ package de.qaware.chronix.spark.api.java.helpers;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import de.qaware.chronix.converter.TimeSeriesConverter;
-import de.qaware.chronix.spark.api.java.ConfigurationParams;
+import de.qaware.chronix.spark.api.java.SparkConfiguration;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 
@@ -54,7 +53,7 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
      * Constructor using the default test data filename.
      */
     public ChronixSolrCloudStorageMock() {
-        this(ConfigurationParams.DEFAULT_TESTDATA_FILE);
+        this(SparkConfiguration.DEFAULT_TESTDATA_FILE);
     }
 
     @Override

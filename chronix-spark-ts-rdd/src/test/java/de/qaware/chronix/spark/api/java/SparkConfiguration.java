@@ -18,11 +18,13 @@ package de.qaware.chronix.spark.api.java;
 import de.qaware.chronix.spark.api.java.helpers.ChronixSolrCloudStorageMock;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 
 /**
  * Some common configuration for the test suite.
  */
-public class ConfigurationParams {
+public class SparkConfiguration {
     // *** cloud computing case
     // public static final String CHRONIX_COLLECTION = "ekgdata";
     public static final String CHRONIX_COLLECTION = "chronix";
@@ -36,4 +38,12 @@ public class ConfigurationParams {
     public static final String DEFAULT_TESTDATA_FILE = "timeseries-testdata.bin";
 
     public static final ChronixSolrCloudStorage<MetricTimeSeries> STORAGE = new ChronixSolrCloudStorageMock();
+
+    public static JavaSparkContext createSparkContext() {
+        SparkConf conf = new SparkConf().setMaster(SparkConfiguration.SPARK_MASTER).setAppName(SparkConfiguration.APP_NAME);
+        ChronixSparkContext.tuneSparkConf(conf);
+        conf.set("spark.driver.allowMultipleContexts", "true");
+        return new JavaSparkContext(conf);
+    }
+
 }

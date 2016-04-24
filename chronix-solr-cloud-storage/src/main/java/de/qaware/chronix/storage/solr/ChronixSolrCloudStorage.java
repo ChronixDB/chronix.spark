@@ -17,14 +17,14 @@ package de.qaware.chronix.storage.solr;
 
 import de.qaware.chronix.converter.TimeSeriesConverter;
 import de.qaware.chronix.storage.solr.stream.SolrStreamingService;
-import de.qaware.chronix.streaming.StorageService;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.cloud.*;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Stream;
@@ -63,6 +63,7 @@ public class ChronixSolrCloudStorage<T> implements Serializable {
 
     public Stream<T> stream(TimeSeriesConverter<T> converter, String zkHost, SolrQuery query) {
         CloudSolrClient connection = new CloudSolrClient(zkHost);
+        connection.setRequestWriter(new BinaryRequestWriter());
         LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
         SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
 
@@ -79,6 +80,7 @@ public class ChronixSolrCloudStorage<T> implements Serializable {
      */
     public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, String shardUrl, SolrQuery query) {
         HttpSolrClient solrClient = getSingleNodeSolrClient(shardUrl);
+        solrClient.setRequestWriter(new BinaryRequestWriter());
         LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, solrClient, query);
         SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, solrClient, nrOfDocumentPerBatch);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
@@ -105,50 +107,56 @@ public class ChronixSolrCloudStorage<T> implements Serializable {
      * @param chronixCollection Solr collection name for chronix time series data
      * @return the list of shards of the default collection
      */
-    public List<String> getShardList(String zkHost, String chronixCollection) {
+    public List<String> getShardList(String zkHost, String chronixCollection) throws IOException {
 
         CloudSolrClient cloudSolrClient = new CloudSolrClient(zkHost);
-        cloudSolrClient.connect();
-
-        ZkStateReader zkStateReader = cloudSolrClient.getZkStateReader();
-
-        ClusterState clusterState = zkStateReader.getClusterState();
-
-        String[] collections;
-        if (clusterState.hasCollection(chronixCollection)) {
-            collections = new String[]{chronixCollection};
-        } else {
-            // might be a collection alias?
-            Aliases aliases = zkStateReader.getAliases();
-            String aliasedCollections = aliases.getCollectionAlias(chronixCollection);
-            if (aliasedCollections == null)
-                throw new IllegalArgumentException("Collection " + chronixCollection + " not found!");
-            collections = aliasedCollections.split(",");
-        }
-
-        Set<String> liveNodes = clusterState.getLiveNodes();
-        Random random = new Random(5150);
-
         List<String> shards = new ArrayList<>();
-        for (String coll : collections) {
-            for (Slice slice : clusterState.getSlices(coll)) {
-                List<String> replicas = new ArrayList<>();
-                for (Replica r : slice.getReplicas()) {
-                    if (r.getState().equals(Replica.State.ACTIVE)) {
-                        ZkCoreNodeProps replicaCoreProps = new ZkCoreNodeProps(r);
-                        if (liveNodes.contains(replicaCoreProps.getNodeName()))
-                            replicas.add(replicaCoreProps.getCoreUrl());
-                    }
-                }
-                int numReplicas = replicas.size();
-                if (numReplicas == 0)
-                    throw new IllegalStateException("Shard " + slice.getName() + " in collection " +
-                            coll + " does not have any active replicas!");
 
-                String replicaUrl = (numReplicas == 1) ? replicas.get(0) : replicas.get(random.nextInt(replicas.size()));
-                shards.add(replicaUrl);
+        try {
+            cloudSolrClient.connect();
+
+            ZkStateReader zkStateReader = cloudSolrClient.getZkStateReader();
+
+            ClusterState clusterState = zkStateReader.getClusterState();
+
+            String[] collections;
+            if (clusterState.hasCollection(chronixCollection)) {
+                collections = new String[]{chronixCollection};
+            } else {
+                // might be a collection alias?
+                Aliases aliases = zkStateReader.getAliases();
+                String aliasedCollections = aliases.getCollectionAlias(chronixCollection);
+                if (aliasedCollections == null)
+                    throw new IllegalArgumentException("Collection " + chronixCollection + " not found!");
+                collections = aliasedCollections.split(",");
             }
+
+            Set<String> liveNodes = clusterState.getLiveNodes();
+            Random random = new Random(5150);
+
+            for (String coll : collections) {
+                for (Slice slice : clusterState.getSlices(coll)) {
+                    List<String> replicas = new ArrayList<>();
+                    for (Replica r : slice.getReplicas()) {
+                        if (r.getState().equals(Replica.State.ACTIVE)) {
+                            ZkCoreNodeProps replicaCoreProps = new ZkCoreNodeProps(r);
+                            if (liveNodes.contains(replicaCoreProps.getNodeName()))
+                                replicas.add(replicaCoreProps.getCoreUrl());
+                        }
+                    }
+                    int numReplicas = replicas.size();
+                    if (numReplicas == 0)
+                        throw new IllegalStateException("Shard " + slice.getName() + " in collection " +
+                                coll + " does not have any active replicas!");
+
+                    String replicaUrl = (numReplicas == 1) ? replicas.get(0) : replicas.get(random.nextInt(replicas.size()));
+                    shards.add(replicaUrl);
+                }
+            }
+        } finally {
+            cloudSolrClient.close();
         }
+
         return shards;
     }
 
