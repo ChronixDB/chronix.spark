@@ -1,31 +1,39 @@
 = Local Chronix Cluster
+This document describes how to setup a local Chronix cluster. The cluster
+consists of a local Spark Cluster und a local Solr Cloud containing test data.
 
-== Setup
- * Download and uncompress `chronix-infrastructure.zip`
+== Prerequisites
+ * Download and uncompress the software package directly into `chronix-infrastructure-local` directory.
+ There should be the dirs `solr-cloud` and `spark` in this directory afterwards. The download URL is:
+https://storage.googleapis.com/chronix-spark/chronix-spark-0.3.tar.gz
  * `chmod 777` the `*.sh` files
 
-== Usage
- * Start Solr Cloud with ./startSolrCloud.sh
- * Start Spark Cluster with ./startSparkCluster.sh
- * Start Zeppelin with ./startZeppelin.sh
- * Stop Solr Cloud with ./stopSolrCloud.sh
- * Stop Spark Cluster with ./stopSparkCluster.sh
- * Stop Zeppelin with ./stopZeppelin.sh
-
+== Start the local cluster
+ * Start Solr Cloud with `./startSolrCloud.sh`
+ * Start Spark Cluster with `./startSparkCluster.sh`
+ * (optional) Start Zeppelin with `./startZeppelin.sh`
 
 == Endpoints
+
+After starting the cluster the following endpoints should be availabe:
+
  * Solr Cloud Node 1: http://localhost:8983/solr
  * Solr Cloud Node 2: http://localhost:7574/solr
  * Zookeeper: http://localhost:9983
  * Spark Master Web UI: http://localhost:8988
- * Zeppelin Web UI: http://localhost:8991/#/
+ * (optional) Zeppelin Web UI: http://localhost:8991/#/
 
-== Stats
- * Solr Cloud
-     * 2 Nodes
-     * 4 Shards
-     * 8,707 time series
-     * 76,983,735 observations (JMX & Unix metrics)
- * Spark Cluster
-     * 1 Master
-     * 1 Worker
+== Cluster stats
+ * Solr Cloud: 2 Nodes, 4 Shards, 8,707 time series, 76,983,735 observations (JMX & Unix metrics)
+ * Spark Cluster: 1 Master, 1 Worker
+
+== Running the test cases against the cluster
+ * Edit the class `SparkTestConfiguration`. Set the system property
+ `CONFIG_PROFILE` to `Profile.LOCAL.name()`.
+ * Perform a gradle `clean build`.
+ * Run the tests (for example `TestChronixRDD`).
+
+== Shut down the local cluster
+ * Stop Solr Cloud with `./stopSolrCloud.sh`
+ * Stop Spark Cluster with `./stopSparkCluster.sh`
+ * (optional) Stop Zeppelin with `./stopZeppelin.sh`
