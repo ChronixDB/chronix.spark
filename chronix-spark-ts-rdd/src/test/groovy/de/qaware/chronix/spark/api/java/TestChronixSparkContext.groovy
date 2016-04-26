@@ -35,14 +35,14 @@ class TestChronixSparkContext extends Specification {
     SolrQuery query
 
     def setup() {
-        sc = SparkConfiguration.createSparkContext();
+        sc = SparkTestConfiguration.createSparkContext();
         csc = new ChronixSparkContext(sc);
-        query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY)
+        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY)
     }
 
     def "testChronixQuery"() {
         when:
-        ChronixRDD result = csc.queryChronixChunks(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE)
+        ChronixRDD result = csc.queryChronixChunks(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE)
         then:
         List<MetricTimeSeries> timeSeries = result.take(5)
 
@@ -51,14 +51,12 @@ class TestChronixSparkContext extends Specification {
         for (MetricTimeSeries ts : timeSeries) {
             System.out.println(ts.toString());
         }
-        cleanup:
-        sc.close()
     }
 
     def "testQuery"() {
         when:
-        ChronixRDD resultChunked = csc.queryChronixChunks(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE)
-        ChronixRDD result = csc.query(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE)
+        ChronixRDD resultChunked = csc.queryChronixChunks(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE)
+        ChronixRDD result = csc.query(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE)
         then:
         long chunked = resultChunked.count()
         long joined = result.count()
@@ -70,7 +68,5 @@ class TestChronixSparkContext extends Specification {
             //TODO: check duplicates according time series identity (and eliminate the assert below which is fragile)
         }
         Assert.assertTrue(resultChunked.count() >= result.count())
-        cleanup:
-        sc.close()
     }
 }

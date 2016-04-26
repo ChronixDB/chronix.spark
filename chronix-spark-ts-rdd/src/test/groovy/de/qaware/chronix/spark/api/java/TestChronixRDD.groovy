@@ -15,12 +15,15 @@
  */
 package de.qaware.chronix.spark.api.java
 
+import de.qaware.chronix.spark.api.java.functions.FilterObservationByTimestamp
 import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions
+import de.qaware.chronix.spark.api.java.timeseries.MetricObservation
 import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SQLContext
 import spock.lang.Shared
 import spock.lang.Specification
@@ -39,12 +42,15 @@ class TestChronixRDD extends Specification {
     SolrQuery query
     @Shared
     ChronixRDD rdd
+    @Shared
+    SQLContext sqlContext
 
     def setup() {
-        sc = SparkConfiguration.createSparkContext();
+        sc = SparkTestConfiguration.createSparkContext();
         csc = new ChronixSparkContext(sc);
-        query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY);
-        rdd = csc.queryChronixChunks(query, SparkConfiguration.ZK_HOST, SparkConfiguration.CHRONIX_COLLECTION, SparkConfiguration.STORAGE);
+        sqlContext = new SQLContext(sc);
+        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY);
+        rdd = csc.queryChronixChunks(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE);
     }
 
     def "test iterator"() {
@@ -57,8 +63,6 @@ class TestChronixRDD extends Specification {
         }
         then:
         i > 0
-        cleanup:
-        sc.close()
     }
 
     def "test mean"() {
@@ -72,8 +76,6 @@ class TestChronixRDD extends Specification {
         println "   - relevant observations: " + count
         then:
         mean > 0.0f
-        cleanup:
-        sc.close()
     }
 
     def "test approx. mean"() {
@@ -85,8 +87,16 @@ class TestChronixRDD extends Specification {
         println "   - execution time: " + (stop - start)
         then:
         mean > 0.0f
-        cleanup:
-        sc.close()
+    }
+
+    def "test slopes / linear regression"() {
+        when:
+        List<Double> slopesList = rdd.getSlopes().collect();
+        for (double slope : slopesList) {
+            System.out.println("Slope: " + slope);
+        }
+        then:
+        slopesList.size() > 0
     }
 
     def "test scalar actions"() {
@@ -99,15 +109,12 @@ class TestChronixRDD extends Specification {
         println "Min: " + min
         then:
         count > 0
-        cleanup:
-        sc.close()
     }
 
     def "test data frame"() {
         given:
-        SQLContext sqlContext = new SQLContext(sc);
-        when:
         DataFrame df = rdd.toDataFrame(sqlContext);
+        when:
         df.show();
         then:
         //Assert that all columns are available
@@ -119,8 +126,16 @@ class TestChronixRDD extends Specification {
         }
         //Assert that DataFrame is not empty
         assertTrue(df.count() > 0);
-        cleanup:
-        sc.close()
+    }
+
+    def "test dataset"() {
+        given:
+        Dataset<MetricObservation> ds = rdd.toObservationsDataset(sqlContext);
+        when:
+        Dataset<MetricObservation> filteredDs = ds.filter(
+                new FilterObservationByTimestamp(1458069519136L));
+        then:
+        assertTrue(filteredDs.count() > 0 && filteredDs.count() < ds.count());
     }
 
 }

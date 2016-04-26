@@ -13,13 +13,10 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package de.qaware.chronix.spark.api.java.helpers;
+package de.qaware.chronix.spark.api.java;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
-import de.qaware.chronix.spark.api.java.ChronixRDD;
-import de.qaware.chronix.spark.api.java.ChronixSparkContext;
-import de.qaware.chronix.spark.api.java.SparkConfiguration;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.commons.collections.IteratorUtils;
@@ -38,9 +35,11 @@ import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 
 /**
- * Externalizes test data from a given Chronix Solr Cloud Storage
+ * Externalizes data from a given Chronix
+ * Solr Cloud Storage for offline usage. Mainly
+ * used to create test data containers.
  */
-public class DataExternalizer {
+public class ExternalizeTestData {
 
     /**
      * @param args optional first argument: file to serialize to. A default file name is provided.
@@ -49,7 +48,7 @@ public class DataExternalizer {
      */
     public static void main(String[] args) throws SolrServerException, IOException {
 
-        String file = SparkConfiguration.DEFAULT_TESTDATA_FILE;
+        String file = SparkTestConfiguration.DEFAULT_TESTDATA_FILE;
         if (args.length >= 1) file = args[0];
 
         Path filePath = Paths.get(file);
@@ -58,7 +57,7 @@ public class DataExternalizer {
         System.out.println("Opening test data file: " + filePath.toString());
 
         //Create Spark context
-        SparkConf conf = new SparkConf().setMaster(SparkConfiguration.SPARK_MASTER).setAppName(SparkConfiguration.APP_NAME);
+        SparkConf conf = new SparkConf().setMaster(SparkTestConfiguration.SPARK_MASTER).setAppName(SparkTestConfiguration.APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         //Create target file
@@ -67,10 +66,10 @@ public class DataExternalizer {
             ChronixSparkContext csc = new ChronixSparkContext(sc);
 
             //Read data into ChronixRDD
-            SolrQuery query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY);
+            SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY);
             ChronixRDD rdd = csc.queryChronixChunks(query,
-                    SparkConfiguration.ZK_HOST,
-                    SparkConfiguration.CHRONIX_COLLECTION,
+                    SparkTestConfiguration.ZK_HOST,
+                    SparkTestConfiguration.CHRONIX_COLLECTION,
                     new ChronixSolrCloudStorage<MetricTimeSeries>(ChronixSolrCloudStorage.CHRONIX_DEFAULT_PAGESIZE));
             System.out.println("Writing " + rdd.count() + " time series into test data file.");
 
