@@ -19,6 +19,7 @@ import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions;
 import de.qaware.chronix.spark.api.java.timeseries.MetricObservation;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.spark.api.java.JavaDoubleRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.DoubleFunction;
@@ -95,6 +96,23 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      */
     public double max() {
         return getValuesAsRdd().max();
+    }
+
+
+    /**
+     * Calculates the slope of a linear regression of every time series.
+     *
+     * @return the slopes (simple linear regression) of each an every time series in the RDD
+     */
+    public JavaDoubleRDD getSlopes() {
+        return this.mapToDouble((DoubleFunction<MetricTimeSeries>) mts -> {
+                    SimpleRegression regression = new SimpleRegression();
+                    mts.points().forEach(p -> {
+                        regression.addData(p.getTimestamp(), p.getValue());
+                    });
+                    return regression.getSlope();
+                }
+        );
     }
 
     /**
