@@ -16,8 +16,6 @@
 package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.converter.KassiopeiaSimpleConverter;
-import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions;
-import de.qaware.chronix.spark.api.java.timeseries.MetricObservation;
 import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesKey;
 import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesOrdering;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
@@ -29,6 +27,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -81,18 +80,10 @@ public class ChronixSparkContext implements Serializable {
         // first get a list of replicas to query for this collection
         List<String> shards = chronixStorage.getShardList(zkHost, collection);
 
-        // we'll be directing queries to each shard, so we don't want distributed
-        final SolrQuery enhQuery = query.getCopy();
-        enhQuery.set("distrib", false);
-
         // parallelize the requests to the shards
         JavaRDD<MetricTimeSeries> docs = jsc.parallelize(shards, shards.size()).flatMap(
-                (FlatMapFunction<String, MetricTimeSeries>) shardUrl ->
-                        chronixStorage.streamFromSingleNode(
-                                new KassiopeiaSimpleConverter(),
-                                shardUrl,
-                                enhQuery)::iterator
-        );
+                (FlatMapFunction<String, MetricTimeSeries>) shardUrl -> chronixStorage.streamFromSingleNode(
+                        new KassiopeiaSimpleConverter(), shardUrl, query)::iterator);
         return new ChronixRDD(docs);
     }
 
@@ -118,8 +109,8 @@ public class ChronixSparkContext implements Serializable {
         JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
                 = rootRdd.groupBy(MetricTimeSeriesKey::new);
 
-        JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd;
-        joinedRdd = groupRdd.mapValues((Iterable<MetricTimeSeries> mtsIt) -> {
+        JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd
+                = groupRdd.mapValues((Function<Iterable<MetricTimeSeries>, MetricTimeSeries>) mtsIt -> {
             MetricTimeSeriesOrdering ordering = new MetricTimeSeriesOrdering();
             List<MetricTimeSeries> orderedChunks = ordering.immutableSortedCopy(mtsIt);
             MetricTimeSeries result = null;
@@ -144,22 +135,17 @@ public class ChronixSparkContext implements Serializable {
      * Tunes the give Spark Configuration with additional parameters
      * to optimize memory consumption and execution performance for
      * Chronix.
+     * <ul>
+     *     <li>Disables the Spark web UI</li>
+     *     <li>Enables the RDD compression to save memory space</li>
+     *     <li>Sets the compression codec to LZF</li>
+     * </ul>
      *
      * @param conf Spark Configuration. Will be modified by the method.
      */
     public static void tuneSparkConf(SparkConf conf) {
         conf.set("spark.ui.enabled", "false");
         conf.set("spark.rdd.compress", "true"); //activates compression of materialized RDD partitions
-        conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
         conf.set("spark.io.compression.codec", "org.apache.spark.io.LZFCompressionCodec");
-        conf.registerKryoClasses(new Class[]{
-                MetricTimeSeries.class,
-                MetricObservation.class,
-                MetricDimensions.class,
-                MetricTimeSeriesKey.class,
-                MetricTimeSeriesOrdering.class,
-                ChronixRDD.class,
-                ChronixSparkContext.class,
-                ChronixSolrCloudStorage.class});
     }
 }

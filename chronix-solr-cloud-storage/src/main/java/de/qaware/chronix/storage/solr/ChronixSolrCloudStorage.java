@@ -81,6 +81,7 @@ public class ChronixSolrCloudStorage<T> implements Serializable {
     public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, String shardUrl, SolrQuery query) {
         HttpSolrClient solrClient = getSingleNodeSolrClient(shardUrl);
         solrClient.setRequestWriter(new BinaryRequestWriter());
+        query.set("distrib", false);
         LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, solrClient, query);
         SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, solrClient, nrOfDocumentPerBatch);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
