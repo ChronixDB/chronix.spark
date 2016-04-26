@@ -16,8 +16,8 @@
 package de.qaware.chronix.storage.solr.stream
 
 import de.qaware.chronix.converter.BinaryTimeSeries
-import de.qaware.chronix.stroage.solr.helpers.DefaultTimeSeriesConverter
-import de.qaware.chronix.stroage.solr.helpers.ReflectionHelper
+import de.qaware.chronix.storage.solr.helpers.DefaultTimeSeriesConverter
+import de.qaware.chronix.storage.solr.helpers.ReflectionHelper
 import org.apache.solr.client.solrj.SolrClient
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.solr.client.solrj.SolrServerException

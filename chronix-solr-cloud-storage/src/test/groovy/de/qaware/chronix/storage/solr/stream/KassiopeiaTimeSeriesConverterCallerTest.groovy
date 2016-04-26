@@ -17,7 +17,7 @@ package de.qaware.chronix.storage.solr.stream
 
 import de.qaware.chronix.Schema
 import de.qaware.chronix.converter.BinaryTimeSeries
-import de.qaware.chronix.stroage.solr.helpers.DefaultTimeSeriesConverter
+import de.qaware.chronix.storage.solr.helpers.DefaultTimeSeriesConverter
 import org.apache.solr.common.SolrDocument
 import spock.lang.Specification
 

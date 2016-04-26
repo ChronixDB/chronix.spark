@@ -15,7 +15,7 @@
  */
 package de.qaware.chronix.storage.solr.stream
 
-import de.qaware.chronix.stroage.solr.helpers.ReflectionHelper
+import de.qaware.chronix.storage.solr.helpers.ReflectionHelper
 import org.slf4j.Logger
 import spock.lang.Specification
 
