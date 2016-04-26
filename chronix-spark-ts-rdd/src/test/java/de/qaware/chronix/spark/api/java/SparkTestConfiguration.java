@@ -28,7 +28,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 public class SparkTestConfiguration {
 
     static {
-        System.setProperty("CONFIG_PROFILE", Profile.LOCAL.name());
+        System.setProperty("CONFIG_PROFILE", Profile.IN_PROCESS.name());
     }
 
     public enum Profile {
