@@ -13,12 +13,11 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package de.qaware.chronix.spark.api.java.helpers;
+package de.qaware.chronix.storage.solr.mock;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import de.qaware.chronix.converter.TimeSeriesConverter;
-import de.qaware.chronix.spark.api.java.SparkConfiguration;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -47,13 +46,6 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
     public ChronixSolrCloudStorageMock(String testDataFileName) {
         super(1);
         this.testDataFile = testDataFileName;
-    }
-
-    /**
-     * Constructor using the default test data filename.
-     */
-    public ChronixSolrCloudStorageMock() {
-        this(SparkConfiguration.DEFAULT_TESTDATA_FILE);
     }
 
     @Override
