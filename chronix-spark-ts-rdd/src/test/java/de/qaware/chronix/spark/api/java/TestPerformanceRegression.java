@@ -36,18 +36,21 @@ public class TestPerformanceRegression {
     private static final long LOOPS = 2;
 
     /**
-     * ------------------------------------------
+     * ----------------------------------------------------
      * OPTIMIZATION LOG
      * Please add your new measurements here with
      * every change on Spark Chronix.
-     * ------------------------------------------
-     * <p>
-     * first attempt            : 9,603ms
-     * with rdd.cache()         : 8,223ms
+     * ----------------------------------------------------
+     * first attempt                              : 9,603ms
+     * with rdd.cache()                           : 8,223ms
+     * with binary protocol & rdd compression     : 7,561ms
+     * with binary protocol                       : 6,865ms
+     * with kryo                                  : 6,347ms
+     * with lzf compression                       : 6,012ms
      */
     public static void main(String[] args) throws SolrServerException, IOException {
         //Create Spark context
-        JavaSparkContext sc = SparkConfiguration.createSparkContext();
+        JavaSparkContext sc = SparkTestConfiguration.createSparkContext();
 
         try {
             //Create Chronix Spark context
@@ -62,10 +65,10 @@ public class TestPerformanceRegression {
             for (int i = 0; i < LOOPS; i++) {
 
                 //Read data into ChronixRDD
-                SolrQuery query = new SolrQuery(SparkConfiguration.SOLR_REFERNCE_QUERY);
+                SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY);
                 ChronixRDD rdd = csc.queryChronixChunks(query,
-                        SparkConfiguration.ZK_HOST,
-                        SparkConfiguration.CHRONIX_COLLECTION,
+                        SparkTestConfiguration.ZK_HOST,
+                        SparkTestConfiguration.CHRONIX_COLLECTION,
                         new ChronixSolrCloudStorage());
                 rdd.cache();
 
