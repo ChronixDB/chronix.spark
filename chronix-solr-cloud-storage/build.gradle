@@ -19,7 +19,6 @@ dependencies {
 
     //Kryo for data storage (with included shaded asm - just to be sure)
     compile 'com.esotericsoftware:kryo-shaded:3.0.3'
-
 }
 
 //add the generated classes to the sources

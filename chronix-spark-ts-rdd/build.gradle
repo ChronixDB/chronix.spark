@@ -19,7 +19,6 @@ dependencies {
     testCompile 'com.esotericsoftware:kryo-shaded:3.0.3'
 }
 
-
 task copyTestResources(type: Copy) {
     from "${projectDir}/src/test/resources"
     into "${buildDir}/classes/test"

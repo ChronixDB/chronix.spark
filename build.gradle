@@ -47,6 +47,11 @@ allprojects {
         toolVersion = '0.7.2.201409121644'
     }
 
+    //Exclude the transitive dependency to slf4j-log4j12 adapter
+    configurations {
+        all*.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
+
 }
 
 
@@ -100,7 +105,6 @@ subprojects {
         testCompile 'org.apache.logging.log4j:log4j-core:2.4'
         testCompile 'org.apache.logging.log4j:log4j-slf4j-impl:2.4'
         testCompile 'org.slf4j:jcl-over-slf4j:1.7.12'
-
     }
 
     test {
