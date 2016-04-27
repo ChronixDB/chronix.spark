@@ -27,10 +27,6 @@ import org.apache.spark.api.java.JavaSparkContext;
  */
 public class SparkTestConfiguration {
 
-    static {
-        System.setProperty("CONFIG_PROFILE", Profile.IN_PROCESS.name());
-    }
-
     public enum Profile {
         IN_PROCESS,
         LOCAL
@@ -47,6 +43,7 @@ public class SparkTestConfiguration {
     public static final String APP_NAME = "Spark Chronix";
     public static final String SOLR_REFERNCE_QUERY = "metric:\"java.lang:type=Memory/HeapMemoryUsage/used\"";
     public static final String DEFAULT_TESTDATA_FILE = "timeseries-testdata.bin";
+    public static final String CONFIG_PROPERTY = "CONFIG_PROFILE";
 
     // IN_PROCESS configuration **************************************************
     public static final String CHRONIX_COLLECTION_IN_PROCESS = "chronix";
@@ -68,11 +65,15 @@ public class SparkTestConfiguration {
 
     private static JavaSparkContext jsc;
 
+    static {
+        System.setProperty(CONFIG_PROPERTY, Profile.LOCAL.name());
+    }
+
     public static JavaSparkContext createSparkContext() {
 
         if (jsc != null) return jsc;
 
-        if (System.getProperty("CONFIG_PROFILE").equals(Profile.LOCAL.name())) {
+        if (System.getProperty(CONFIG_PROPERTY).equals(Profile.LOCAL.name())) {
             System.out.println("Activating profile LOCAL");
             CHRONIX_COLLECTION = CHRONIX_COLLECTION_LOCAL;
             ZK_HOST = ZK_HOST_LOCAL;
@@ -93,7 +94,9 @@ public class SparkTestConfiguration {
         conf.set("spark.driver.allowMultipleContexts", "true");
         conf.set("spark.eventLog.enabled", "true");
         conf.set("spark.eventLog.dir", SPARK_HISTORY_DIR);
-        conf.setJars(JARS);
+        if (System.getProperty(CONFIG_PROPERTY).equals(Profile.LOCAL.name())) {
+            conf.setJars(JARS);
+        }
         jsc = new JavaSparkContext(conf);
         return jsc;
     }

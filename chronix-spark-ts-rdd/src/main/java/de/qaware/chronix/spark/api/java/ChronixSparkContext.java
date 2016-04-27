@@ -16,19 +16,14 @@
 package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.converter.KassiopeiaSimpleConverter;
-import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesKey;
-import de.qaware.chronix.spark.api.java.timeseries.MetricTimeSeriesOrdering;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.Function;
-import scala.Tuple2;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -103,32 +98,7 @@ public class ChronixSparkContext implements Serializable {
             final String zkHost,
             final String collection,
             final ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage) throws SolrServerException, IOException {
-
-        ChronixRDD rootRdd = queryChronixChunks(query, zkHost, collection, chronixStorage);
-
-        JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
-                = rootRdd.groupBy(MetricTimeSeriesKey::new);
-
-        JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd
-                = groupRdd.mapValues((Function<Iterable<MetricTimeSeries>, MetricTimeSeries>) mtsIt -> {
-            MetricTimeSeriesOrdering ordering = new MetricTimeSeriesOrdering();
-            List<MetricTimeSeries> orderedChunks = ordering.immutableSortedCopy(mtsIt);
-            MetricTimeSeries result = null;
-            for (MetricTimeSeries mts : orderedChunks) {
-                if (result == null) {
-                    result = new MetricTimeSeries
-                            .Builder(mts.getMetric())
-                            .attributes(mts.getAttributesReference()).build();
-                }
-                result.addAll(mts.getTimestampsAsArray(), mts.getValuesAsArray());
-            }
-            return result;
-        });
-
-        JavaRDD<MetricTimeSeries> resultJavaRdd =
-                joinedRdd.map((Tuple2<MetricTimeSeriesKey, MetricTimeSeries> mtTuple) -> mtTuple._2);
-
-        return new ChronixRDD(resultJavaRdd);
+        return queryChronixChunks(query, zkHost, collection, chronixStorage).joinChunks();
     }
 
     /**

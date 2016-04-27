@@ -15,23 +15,31 @@
  */
 package de.qaware.chronix.spark.api.java;
 
-import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions;
-import de.qaware.chronix.spark.api.java.timeseries.MetricObservation;
+import de.qaware.chronix.spark.api.java.functions.DimensionFilterFunction;
+import de.qaware.chronix.spark.api.java.timeseries.metric.MetricDimensions;
+import de.qaware.chronix.spark.api.java.timeseries.metric.MetricObservation;
+import de.qaware.chronix.spark.api.java.timeseries.metric.MetricTimeSeriesKey;
+import de.qaware.chronix.spark.api.java.timeseries.metric.MetricTimeSeriesOrdering;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.spark.api.java.JavaDoubleRDD;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.DoubleFunction;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SQLContext;
+import scala.Tuple2;
 import scala.reflect.ClassTag$;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * ChronixRDD: A time series implementation based on Chronix.
@@ -100,7 +108,10 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
 
 
     /**
-     * Calculates the slope of a linear regression of every time series.
+     * Action: Calculates the slope of a linear regression of every time series.
+     *
+     * Where: value = slope * timestamp
+     * .. or:     y = slope * x
      *
      * @return the slopes (simple linear regression) of each an every time series in the RDD
      */
@@ -113,6 +124,70 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
                     return regression.getSlope();
                 }
         );
+    }
+
+    /**
+     * Transformation: Filters the contained time series according the given predicate.
+     *
+     * @param filter the predicate
+     * @return the time series matching the predicate
+     */
+    public ChronixRDD filterTimeSeries(Function<MetricTimeSeries, Boolean> filter) {
+        JavaRDD<MetricTimeSeries> mts = this.filter(filter);
+        return new ChronixRDD(mts);
+    }
+
+    /**
+     * Transformation: Filters MetricTimeSeries according their dimensional values.
+     *
+     * @param dimensionFilter dimensions (key) and their value
+     * @return time series according the filter criteria
+     * @see DimensionFilterFunction
+     */
+    public ChronixRDD filterByDimensions(Map<String, String> dimensionFilter) {
+        return this.filterTimeSeries(new DimensionFilterFunction(dimensionFilter));
+    }
+
+    /**
+     * Transformation: Filters MetricTimeSeries according their dimensional values.
+     *
+     * @param dimensionFilter dimensions (key) and their value
+     * @param ignoreNull      also include time series if dimensional value is null
+     * @return time series according the filter criteria
+     */
+    public ChronixRDD filterByDimensions(Map<String, String> dimensionFilter, boolean ignoreNull) {
+        return this.filterTimeSeries(new DimensionFilterFunction(dimensionFilter, ignoreNull));
+    }
+
+    /**
+     * Transformation: Joins the time series according their identity.
+     *
+     * @return joined time series
+     */
+    public ChronixRDD joinChunks() {
+        JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
+                = this.groupBy(MetricTimeSeriesKey::new);
+
+        JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd
+                = groupRdd.mapValues((Function<Iterable<MetricTimeSeries>, MetricTimeSeries>) mtsIt -> {
+            MetricTimeSeriesOrdering ordering = new MetricTimeSeriesOrdering();
+            List<MetricTimeSeries> orderedChunks = ordering.immutableSortedCopy(mtsIt);
+            MetricTimeSeries result = null;
+            for (MetricTimeSeries mts : orderedChunks) {
+                if (result == null) {
+                    result = new MetricTimeSeries
+                            .Builder(mts.getMetric())
+                            .attributes(mts.getAttributesReference()).build();
+                }
+                result.addAll(mts.getTimestampsAsArray(), mts.getValuesAsArray());
+            }
+            return result;
+        });
+
+        JavaRDD<MetricTimeSeries> resultJavaRdd =
+                joinedRdd.map((Tuple2<MetricTimeSeriesKey, MetricTimeSeries> mtTuple) -> mtTuple._2);
+
+        return new ChronixRDD(resultJavaRdd);
     }
 
     /**
@@ -168,7 +243,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * <p>
      * The DataFrame contains the following columns:
      * <ul>
-     * <li>for each dimension (@see: de.qaware.chronix.spark.api.java.timeseries.MetricDimensions) one column</li>
+     * <li>for each dimension (@see: de.qaware.chronix.spark.api.java.timeseries.metric.MetricDimensions) one column</li>
      * <li>one column for the observations' timestamp</li>
      * <li>one column for the measurement value at the observation timestamp</li>
      * </ul>

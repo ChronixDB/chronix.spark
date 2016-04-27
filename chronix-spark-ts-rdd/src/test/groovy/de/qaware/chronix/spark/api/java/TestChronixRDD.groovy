@@ -16,8 +16,8 @@
 package de.qaware.chronix.spark.api.java
 
 import de.qaware.chronix.spark.api.java.functions.FilterObservationByTimestamp
-import de.qaware.chronix.spark.api.java.timeseries.MetricDimensions
-import de.qaware.chronix.spark.api.java.timeseries.MetricObservation
+import de.qaware.chronix.spark.api.java.timeseries.metric.MetricDimensions
+import de.qaware.chronix.spark.api.java.timeseries.metric.MetricObservation
 import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
@@ -50,7 +50,7 @@ class TestChronixRDD extends Specification {
         csc = new ChronixSparkContext(sc);
         sqlContext = new SQLContext(sc);
         query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY);
-        rdd = csc.queryChronixChunks(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE);
+        rdd = csc.query(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE);
     }
 
     def "test iterator"() {
@@ -58,7 +58,8 @@ class TestChronixRDD extends Specification {
         Iterator<MetricTimeSeries> it = rdd.iterator();
         int i = 0;
         while (it.hasNext()) {
-            it.next();
+            MetricTimeSeries mts = it.next();
+            println mts
             i++;
         }
         then:
@@ -102,9 +103,11 @@ class TestChronixRDD extends Specification {
     def "test scalar actions"() {
         when:
         long count = rdd.countObservations()
+        long countTs = rdd.count();
         double max = rdd.max()
         double min = rdd.min()
-        println "Count: " + count
+        println "Count observations: " + count
+        println "Count time series: " + countTs
         println "Max: " + max
         println "Min: " + min
         then:
@@ -136,6 +139,24 @@ class TestChronixRDD extends Specification {
                 new FilterObservationByTimestamp(1458069519136L));
         then:
         assertTrue(filteredDs.count() > 0 && filteredDs.count() < ds.count());
+    }
+
+    def "test join"() {
+        when:
+        ChronixRDD cRdd = rdd.joinChunks()
+        then:
+        cRdd.count() == rdd.count()
+    }
+
+    def "test filter functions"() {
+        given:
+        Map<String, String> dimFilter = new HashMap<>()
+        dimFilter.put("measurement", "20160317")
+        dimFilter.put("group", "jenkins-jmx")
+        when:
+        ChronixRDD resRdd = rdd.filterByDimensions(dimFilter)
+        then:
+        resRdd.count() > 0
     }
 
 }
