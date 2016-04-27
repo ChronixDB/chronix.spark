@@ -15,7 +15,7 @@
  */
 package de.qaware.chronix.spark.api.java.functions;
 
-import de.qaware.chronix.spark.api.java.timeseries.MetricObservation;
+import de.qaware.chronix.spark.api.java.timeseries.metric.MetricObservation;
 import org.apache.spark.api.java.function.FilterFunction;
 
 /**
