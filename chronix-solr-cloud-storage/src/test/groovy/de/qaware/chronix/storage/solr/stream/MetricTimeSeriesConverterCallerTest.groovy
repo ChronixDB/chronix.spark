@@ -28,7 +28,7 @@ import java.time.temporal.ChronoUnit
  * Unit test for the document converter
  * @author f.lautenschlager
  */
-class KassiopeiaTimeSeriesConverterCallerTest extends Specification {
+class MetricTimeSeriesConverterCallerTest extends Specification {
 
     def "test call convert document for an remote solr"() {
         given:

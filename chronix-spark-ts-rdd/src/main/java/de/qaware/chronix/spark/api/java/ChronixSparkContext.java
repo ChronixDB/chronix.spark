@@ -37,6 +37,8 @@ import java.util.List;
  */
 public class ChronixSparkContext implements Serializable {
 
+    private static final long serialVersionUID = 42L;
+
     private final transient JavaSparkContext jsc;
 
     public ChronixSparkContext(JavaSparkContext jsc) {
@@ -70,7 +72,7 @@ public class ChronixSparkContext implements Serializable {
             final SolrQuery query,
             final String zkHost,
             final String collection,
-            final ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage) throws SolrServerException, IOException {
+            final ChronixSolrCloudStorage chronixStorage) throws SolrServerException, IOException {
 
         // first get a list of replicas to query for this collection
         List<String> shards = chronixStorage.getShardList(zkHost, collection);
@@ -78,7 +80,7 @@ public class ChronixSparkContext implements Serializable {
         // parallelize the requests to the shards
         JavaRDD<MetricTimeSeries> docs = jsc.parallelize(shards, shards.size()).flatMap(
                 (FlatMapFunction<String, MetricTimeSeries>) shardUrl -> chronixStorage.streamFromSingleNode(
-                        new KassiopeiaSimpleConverter(), shardUrl, query)::iterator);
+                        zkHost, collection, shardUrl, query, new KassiopeiaSimpleConverter())::iterator);
         return new ChronixRDD(docs);
     }
 
@@ -97,7 +99,7 @@ public class ChronixSparkContext implements Serializable {
             final SolrQuery query,
             final String zkHost,
             final String collection,
-            final ChronixSolrCloudStorage<MetricTimeSeries> chronixStorage) throws SolrServerException, IOException {
+            final ChronixSolrCloudStorage chronixStorage) throws SolrServerException, IOException {
         return queryChronixChunks(query, zkHost, collection, chronixStorage).joinChunks();
     }
 

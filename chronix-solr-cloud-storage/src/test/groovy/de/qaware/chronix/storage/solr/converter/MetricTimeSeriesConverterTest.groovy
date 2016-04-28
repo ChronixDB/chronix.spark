@@ -15,7 +15,6 @@
  */
 package de.qaware.chronix.storage.solr.converter
 
-
 import de.qaware.chronix.Schema
 import de.qaware.chronix.converter.BinaryTimeSeries
 import de.qaware.chronix.converter.common.Compression
@@ -24,32 +23,32 @@ import org.apache.commons.codec.binary.Base64
 import spock.lang.Specification
 
 /**
- * Unit test for the metric time series converter
+ * Unit test for the kassiopeia time series converter
+ * @author f.lautenschlager
  */
 class MetricTimeSeriesConverterTest extends Specification {
 
-    def "test convert metric time series"() {
+    def "test convert kassiopeia time series"() {
         given:
-        def start = new Date()
+        def start = new Date();
         def end = new Date()
         def binaryTS = new BinaryTimeSeries.Builder()
                 .field("test", 6d)
-                .field("metric", "random")
                 .field(Schema.DATA, compressedData())
                 .field(Schema.END, end)
                 .field(Schema.START, start)
                 .build()
 
-        def metricConverter = new MetricTimeSeriesConverter()
+        def converter = new MetricTimeSeriesConverter()
 
         when:
-        def metricTimeSeries = metricConverter.from(binaryTS, 0, 0)
-        def testedTS = metricConverter.to(metricTimeSeries)
-
+        def timeSeries = converter.from(binaryTS, 0, 0)
+        def testedTs = converter.to(timeSeries)
         then:
-        testedTS.get("test") == 6d
-        testedTS.start == start.time
-        testedTS.end == end.time
+        timeSeries.size() == 11
+        testedTs.get("test") == 6d
+        testedTs.get(Schema.END) == end.time
+        testedTs.get(Schema.START) == start.time
     }
 
     String compressedData() {

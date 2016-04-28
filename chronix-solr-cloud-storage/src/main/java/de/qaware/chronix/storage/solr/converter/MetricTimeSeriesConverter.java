@@ -18,58 +18,51 @@ package de.qaware.chronix.storage.solr.converter;
 import de.qaware.chronix.Schema;
 import de.qaware.chronix.converter.BinaryTimeSeries;
 import de.qaware.chronix.converter.TimeSeriesConverter;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.dts.Pair;
+import de.qaware.chronix.timeseries.TimeSeries;
 import de.qaware.ekg.collector.storage.protocol.ProtocolBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
+ * Converter for Chronix to convert
  *
+ * @author f.lautenschlager
+ * @author l.buchner
  */
-public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTimeSeries> {
+public class MetricTimeSeriesConverter implements TimeSeriesConverter<TimeSeries<Long, Double>> {
 
-    private static final String METRIC = "metric";
     private static final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesConverter.class);
 
     @Override
-    public MetricTimeSeries from(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd) {
+    public TimeSeries<Long, Double> from(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd) {
         try {
-            //get the metric
-            if (binaryTimeSeries.get(METRIC) == null) {
-                //Should not happen
-                throw new IllegalStateException("");
-            }
-            String metric = binaryTimeSeries.get(METRIC).toString();
-
-            MetricTimeSeries.Builder tsBuilder = new MetricTimeSeries.Builder(metric);
 
             String blob = (String) binaryTimeSeries.get(Schema.DATA);
             ProtocolBuffer.Points protocolBufferPoints = Util.loadIntoProtocolBuffers(blob);
 
-            for (ProtocolBuffer.Point point : protocolBufferPoints.getPointsList()) {
-                if (point.getDate() >= queryStart && point.getDate() <= queryEnd) {
-                    tsBuilder.point(point.getDate(), point.getValue());
-                }
-            }
+            Iterator<Pair<Long, Double>> iter = protocolBufferPoints.getPointsList().stream().map(p -> Pair.pairOf(p.getDate(), p.getValue())).iterator();
+            TimeSeries<Long, Double> timeSeries = new TimeSeries<>(iter);
 
             binaryTimeSeries.getFields().forEach((field, value) -> {
                 if (Schema.isUserDefined(field)) {
                     //Add attributes
-                    tsBuilder.attribute(field, value);
+                    timeSeries.addAttribute(field, value);
                 }
             });
 
             //convert start and end to long
             Date start = (Date) binaryTimeSeries.get(Schema.START);
             Date end = (Date) binaryTimeSeries.get(Schema.END);
-            tsBuilder.attribute(Schema.START, start.getTime());
-            tsBuilder.attribute(Schema.END, end.getTime());
+            timeSeries.addAttribute(Schema.START, start.getTime());
+            timeSeries.addAttribute(Schema.END, end.getTime());
 
-            return tsBuilder.build();
+            return timeSeries;
 
         } catch (IOException e) {
             LOGGER.error("Could not convert binary time series to metric time series.", e);
@@ -78,19 +71,24 @@ public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTime
     }
 
     @Override
-    public BinaryTimeSeries to(MetricTimeSeries document) {
+    public BinaryTimeSeries to(TimeSeries<Long, Double> document) {
         BinaryTimeSeries.Builder binaryTimeSeries = new BinaryTimeSeries.Builder();
 
         //Add attributes
-        Map<String, Object> attributes = document.getAttributesReference();
-        for (Map.Entry<String, Object> attribute : attributes.entrySet()) {
-            binaryTimeSeries.field(attribute.getKey(), attribute.getValue());
+        Iterator<Map.Entry<String, Object>> it = document.getAttributes();
+        while (it.hasNext()) {
+            Map.Entry<String, Object> entry = it.next();
+            binaryTimeSeries.field(entry.getKey(), entry.getValue());
         }
 
         //Add points
         ProtocolBuffer.Points.Builder builder = ProtocolBuffer.Points.newBuilder();
         ProtocolBuffer.Point.Builder pointBuilder = ProtocolBuffer.Point.newBuilder();
-        document.points().forEach(point -> builder.addPoints(pointBuilder.setDate(point.getTimestamp()).setValue(point.getValue())));
+        for (Pair<Long, Double> point : document) {
+            if (point.getFirst() != null) {
+                builder.addPoints(pointBuilder.setDate(point.getFirst()).setValue(point.getSecond()));
+            }
+        }
 
         //add the data field to the binary time series
         String data = Util.fromProtocolBuffersToChunk(builder.build());
@@ -99,3 +97,4 @@ public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTime
         return binaryTimeSeries.build();
     }
 }
+
