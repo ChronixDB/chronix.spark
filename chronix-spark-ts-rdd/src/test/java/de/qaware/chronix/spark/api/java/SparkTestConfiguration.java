@@ -17,7 +17,6 @@ package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.storage.solr.mock.ChronixSolrCloudStorageMock;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
 
@@ -49,19 +48,19 @@ public class SparkTestConfiguration {
     public static final String CHRONIX_COLLECTION_IN_PROCESS = "chronix";
     public static final String ZK_HOST_IN_PROCESS = "";
     public static final String SPARK_MASTER_IN_PROCESS = "local[4]";
-    public static final ChronixSolrCloudStorage<MetricTimeSeries> STORAGE_IN_PROCESS = new ChronixSolrCloudStorageMock(DEFAULT_TESTDATA_FILE);
+    public static final ChronixSolrCloudStorage STORAGE_IN_PROCESS = new ChronixSolrCloudStorageMock(DEFAULT_TESTDATA_FILE);
 
     // LOCAL configuration ********************************************************
     public static final String CHRONIX_COLLECTION_LOCAL = "chronix";
     public static final String ZK_HOST_LOCAL = "localhost:9983";
     public static final String SPARK_MASTER_LOCAL = "spark://localhost:8987";
-    public static final ChronixSolrCloudStorage<MetricTimeSeries> STORAGE_LOCAL = new ChronixSolrCloudStorage();
+    public static final ChronixSolrCloudStorage STORAGE_LOCAL = new ChronixSolrCloudStorage();
 
     // Initialize the configuration space
     public static String CHRONIX_COLLECTION;
     public static String ZK_HOST;
     public static String SPARK_MASTER;
-    public static ChronixSolrCloudStorage<MetricTimeSeries> STORAGE;
+    public static ChronixSolrCloudStorage STORAGE;
 
     private static JavaSparkContext jsc;
 
