@@ -66,7 +66,7 @@ public class SparkTestConfiguration {
     private static JavaSparkContext jsc;
 
     static {
-        System.setProperty(CONFIG_PROPERTY, Profile.LOCAL.name());
+        System.setProperty(CONFIG_PROPERTY, Profile.IN_PROCESS.name());
     }
 
     public static JavaSparkContext createSparkContext() {
