@@ -49,16 +49,14 @@ public class DimensionFilterFunction implements Function<MetricTimeSeries, Boole
     }
 
     @Override
-    public Boolean call(MetricTimeSeries mts) throws Exception {
-
+    public Boolean call(MetricTimeSeries mts) {
+        //TODO: improve tests and make method right
         for (Map.Entry<String, String> entry : dimensionalFilter.entrySet()) {
             String value = (String) mts.attribute(entry.getKey());
-            if (value == null && ignoreNulls) return true;
-            else if (value == null && entry.getValue() == null) ;
-            else if (value == null) return false;
-            else {
-                return value.equals(entry.getValue());
-            }
+            if (value == null && !ignoreNulls) return false;
+            else if (value == null && entry.getValue() != null) return false;
+            else if (value == null && entry.getValue() == null) continue;
+            else if (value != null && !value.equals(entry.getValue())) return false;
         }
         return true; //if no filter is defined, return true
     }

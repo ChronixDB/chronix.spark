@@ -62,8 +62,6 @@ public class TimeSeriesConverterCaller<T> implements Callable<T> {
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     public T call() throws Exception {
         BinaryTimeSeries.Builder timeSeriesBuilder = new BinaryTimeSeries.Builder();
-
-        //document.forEach(attributeField -> addToBuilder(timeSeriesBuilder, attributeField));
         document.forEach(attributeField -> timeSeriesBuilder.field(attributeField.getKey(), attributeField.getValue()));
         LOGGER.debug("Calling document converter with {}", document);
         T timeSeries = documentConverter.from(timeSeriesBuilder.build(), queryStart, queryEnd);
