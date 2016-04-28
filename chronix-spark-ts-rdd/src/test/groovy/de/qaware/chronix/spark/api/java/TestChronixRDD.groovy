@@ -16,8 +16,8 @@
 package de.qaware.chronix.spark.api.java
 
 import de.qaware.chronix.spark.api.java.functions.FilterObservationByTimestamp
-import de.qaware.chronix.spark.api.java.timeseries.metric.MetricDimensions
-import de.qaware.chronix.spark.api.java.timeseries.metric.MetricObservation
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimensions
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation
 import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf

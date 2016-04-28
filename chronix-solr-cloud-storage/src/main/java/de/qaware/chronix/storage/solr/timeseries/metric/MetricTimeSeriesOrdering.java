@@ -13,12 +13,12 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package de.qaware.chronix.spark.api.java.timeseries.metric;
+package de.qaware.chronix.storage.solr.timeseries.metric;
 
 import com.google.common.collect.Ordering;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 
-import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
  * Orders MetricTimeSeries by their start timestamp
@@ -27,9 +27,12 @@ import javax.annotation.Nullable;
  * left = right = 0
  * left > right -> +1
  */
-public class MetricTimeSeriesOrdering extends Ordering<MetricTimeSeries> {
+public class MetricTimeSeriesOrdering extends Ordering<MetricTimeSeries> implements Serializable {
+
+    private static final long serialVersionUID = 42L;
+
     @Override
-    public int compare(@Nullable MetricTimeSeries left, @Nullable MetricTimeSeries right) {
+    public int compare(MetricTimeSeries left, MetricTimeSeries right) {
         if (left == null && right == null) {
             return 0;
         } else if (left == null) {

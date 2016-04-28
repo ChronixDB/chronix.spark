@@ -15,8 +15,8 @@
  */
 package de.qaware.chronix.spark.api.java;
 
-import de.qaware.chronix.spark.api.java.timeseries.metric.MetricObservation;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;

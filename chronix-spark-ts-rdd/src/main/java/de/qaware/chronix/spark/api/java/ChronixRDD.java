@@ -16,10 +16,10 @@
 package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.spark.api.java.functions.DimensionFilterFunction;
-import de.qaware.chronix.spark.api.java.timeseries.metric.MetricDimensions;
-import de.qaware.chronix.spark.api.java.timeseries.metric.MetricObservation;
-import de.qaware.chronix.spark.api.java.timeseries.metric.MetricTimeSeriesKey;
-import de.qaware.chronix.spark.api.java.timeseries.metric.MetricTimeSeriesOrdering;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimensions;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeriesKey;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeriesOrdering;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
@@ -118,9 +118,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
     public JavaDoubleRDD getSlopes() {
         return this.mapToDouble((DoubleFunction<MetricTimeSeries>) mts -> {
                     SimpleRegression regression = new SimpleRegression();
-                    mts.points().forEach(p -> {
-                        regression.addData(p.getTimestamp(), p.getValue());
-                    });
+            mts.points().forEach(p -> regression.addData(p.getTimestamp(), p.getValue()));
                     return regression.getSlope();
                 }
         );
@@ -243,7 +241,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * <p>
      * The DataFrame contains the following columns:
      * <ul>
-     * <li>for each dimension (@see: de.qaware.chronix.spark.api.java.timeseries.metric.MetricDimensions) one column</li>
+     * <li>for each dimension (@see: de.qaware.chronix.storage.solr.timeseries.metric.MetricDimensions) one column</li>
      * <li>one column for the observations' timestamp</li>
      * <li>one column for the measurement value at the observation timestamp</li>
      * </ul>

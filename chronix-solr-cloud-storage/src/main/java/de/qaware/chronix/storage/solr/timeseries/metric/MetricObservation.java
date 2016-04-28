@@ -13,7 +13,7 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-package de.qaware.chronix.spark.api.java.timeseries.metric;
+package de.qaware.chronix.storage.solr.timeseries.metric;
 
 import java.io.Serializable;
 
