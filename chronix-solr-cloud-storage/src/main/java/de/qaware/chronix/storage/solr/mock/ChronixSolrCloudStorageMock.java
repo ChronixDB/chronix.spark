@@ -21,12 +21,11 @@ import de.qaware.chronix.converter.TimeSeriesConverter;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.impl.CloudSolrClient;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.zip.InflaterInputStream;
@@ -36,7 +35,7 @@ import java.util.zip.InflaterInputStream;
  * <p>
  * Reads test data from a Kryo serialized file of time series test data.
  */
-public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricTimeSeries> {
+public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage {
 
     private String testDataFile;
 
@@ -49,12 +48,7 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
     }
 
     @Override
-    public Stream<MetricTimeSeries> stream(TimeSeriesConverter<MetricTimeSeries> converter, String zkHost, SolrQuery query) {
-        return readTestData();
-    }
-
-    @Override
-    public Stream<MetricTimeSeries> streamFromSingleNode(TimeSeriesConverter<MetricTimeSeries> converter, String shardUrl, SolrQuery query) {
+    public Stream<MetricTimeSeries> streamFromSingleNode(String zkHost, String collection, String shardUrl, SolrQuery query, TimeSeriesConverter<MetricTimeSeries> converter) throws IOException {
         return readTestData();
     }
 
@@ -71,11 +65,6 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public boolean add(TimeSeriesConverter<MetricTimeSeries> converter, Collection<MetricTimeSeries> documents, CloudSolrClient connection) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

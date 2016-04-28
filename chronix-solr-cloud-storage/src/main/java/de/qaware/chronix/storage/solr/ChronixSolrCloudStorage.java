@@ -15,34 +15,35 @@
  */
 package de.qaware.chronix.storage.solr;
 
+import de.qaware.chronix.Schema;
 import de.qaware.chronix.converter.TimeSeriesConverter;
 import de.qaware.chronix.storage.solr.stream.SolrStreamingService;
+import de.qaware.chronix.storage.solr.stream.SolrTupleStreamingService;
+import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.io.stream.CloudSolrStream;
 import org.apache.solr.common.cloud.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * @param <T> the type defining the returned type
- */
-public class ChronixSolrCloudStorage<T> implements Serializable {
-
-    private static final long serialVersionUID = 42L;
-
-    private final int nrOfDocumentPerBatch;
+public class ChronixSolrCloudStorage implements Serializable {
 
     /**
      * The default pagesize for paginations within Solr.
      */
     public static final int CHRONIX_DEFAULT_PAGESIZE = 1000;
+    private static final long serialVersionUID = 42L;
+    private final int nrOfDocumentPerBatch;
+    private static final boolean EXPORT_HANDLER_STREAM = false;
 
 
     /**
@@ -61,34 +62,84 @@ public class ChronixSolrCloudStorage<T> implements Serializable {
         this.nrOfDocumentPerBatch = CHRONIX_DEFAULT_PAGESIZE;
     }
 
-    public Stream<T> stream(TimeSeriesConverter<T> converter, String zkHost, SolrQuery query) {
-        CloudSolrClient connection = new CloudSolrClient(zkHost);
-        connection.setRequestWriter(new BinaryRequestWriter());
-        LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, connection, query);
-        SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, connection, nrOfDocumentPerBatch);
-
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
-    }
-
     /**
      * Fetches a stream of time series only from a single node.
      *
-     * @param converter  the time series type converter
-     * @param shardUrl the URL of the shard pointing to a single node
-     * @param query      the solr query
+     * @param shardUrl  the URL of the shard pointing to a single node
+     * @param query     the solr query
+     * @param converter the time series type converter
      * @return a stream of time series
      */
-    public Stream<T> streamFromSingleNode(TimeSeriesConverter<T> converter, String shardUrl, SolrQuery query) {
+    public Stream<MetricTimeSeries> streamFromSingleNode(String zkHost,
+                                                         String collection,
+                                                         String shardUrl,
+                                                         SolrQuery query,
+                                                         TimeSeriesConverter<MetricTimeSeries> converter) throws IOException {
+        if (EXPORT_HANDLER_STREAM) {
+            return streamWithCloudSolrStream(zkHost, collection, shardUrl, query, converter);
+        } else {
+            return streamWithHttpSolrClient(shardUrl, query, converter);
+        }
+    }
+
+    /**
+     * Fetches a stream of time series only from a single node with CloudSolrStream.
+     *
+     * @param zkHost
+     * @param collection
+     * @param shardUrl
+     * @param query
+     * @param converter
+     * @return
+     * @throws IOException
+     */
+    private Stream<MetricTimeSeries> streamWithCloudSolrStream(String zkHost,
+                                                               String collection,
+                                                               String shardUrl,
+                                                               SolrQuery query,
+                                                               TimeSeriesConverter<MetricTimeSeries> converter) throws IOException {
+
+        Map params = new HashMap();
+        params.put("q", query.getQuery());
+        params.put("sort", "id asc");
+        params.put("shards", extractShardIdFromShardUrl(shardUrl));
+
+        params.put("fl",
+                Schema.DATA + ", " + Schema.ID + ", " + Schema.START + ", " + Schema.END +
+                        ", metric, host, measurement, process, ag, group");
+        params.put("qt", "/export");
+        params.put("distrib", false);
+
+        CloudSolrStream solrStream = new CloudSolrStream(zkHost, collection, params);
+        solrStream.open();
+        SolrTupleStreamingService tupStream = new SolrTupleStreamingService(solrStream, converter);
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(tupStream, Spliterator.SIZED), false);
+    }
+
+    private String extractShardIdFromShardUrl(String shardUrl) {
+        String[] shardSplits = shardUrl.split("/");
+        if (shardSplits.length != 5) throw new RuntimeException(
+                new MalformedURLException("Wrong shard URL: " + shardUrl));
+        return shardSplits[4];
+    }
+
+    /**
+     * Fetches a stream of time series only from a single node with HttpSolrClient.
+     *
+     * @param shardUrl
+     * @param query
+     * @param converter
+     * @return
+     */
+    private Stream<MetricTimeSeries> streamWithHttpSolrClient(String shardUrl,
+                                                              SolrQuery query,
+                                                              TimeSeriesConverter<MetricTimeSeries> converter) {
         HttpSolrClient solrClient = getSingleNodeSolrClient(shardUrl);
         solrClient.setRequestWriter(new BinaryRequestWriter());
         query.set("distrib", false);
         LoggerFactory.getLogger(ChronixSolrCloudStorage.class).debug("Streaming data from solr using converter {}, Solr Client {}, and Solr Query {}", converter, solrClient, query);
-        SolrStreamingService<T> solrStreamingService = new SolrStreamingService<>(converter, query, solrClient, nrOfDocumentPerBatch);
+        SolrStreamingService<MetricTimeSeries> solrStreamingService = new SolrStreamingService<>(converter, query, solrClient, nrOfDocumentPerBatch);
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(solrStreamingService, Spliterator.SIZED), false);
-    }
-
-    public boolean add(TimeSeriesConverter<T> converter, Collection<T> documents, CloudSolrClient connection) {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -104,7 +155,7 @@ public class ChronixSolrCloudStorage<T> implements Serializable {
     /**
      * Returns the list of shards of the default collection.
      *
-     * @param zkHost ZooKeeper URL
+     * @param zkHost            ZooKeeper URL
      * @param chronixCollection Solr collection name for chronix time series data
      * @return the list of shards of the default collection
      */

@@ -70,7 +70,7 @@ public class ExternalizeTestData {
             ChronixRDD rdd = csc.queryChronixChunks(query,
                     SparkTestConfiguration.ZK_HOST,
                     SparkTestConfiguration.CHRONIX_COLLECTION,
-                    new ChronixSolrCloudStorage<MetricTimeSeries>(ChronixSolrCloudStorage.CHRONIX_DEFAULT_PAGESIZE));
+                    new ChronixSolrCloudStorage(ChronixSolrCloudStorage.CHRONIX_DEFAULT_PAGESIZE));
             System.out.println("Writing " + rdd.count() + " time series into test data file.");
 
             //Loop through result and serialize it to disk
