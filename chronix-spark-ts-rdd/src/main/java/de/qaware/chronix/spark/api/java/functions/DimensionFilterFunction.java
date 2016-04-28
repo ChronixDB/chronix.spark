@@ -29,12 +29,20 @@ public class DimensionFilterFunction implements Function<MetricTimeSeries, Boole
     private boolean ignoreNulls = false;
 
     /**
-     * @param dimensionalFilter
+     * Default constructor.
+     *
+     * @param dimensionalFilter dimensions (key) and their values to filter
      */
     public DimensionFilterFunction(Map<String, String> dimensionalFilter) {
         this.dimensionalFilter = dimensionalFilter;
     }
 
+    /**
+     * Contructor including decision to ignore non-set dimensions.
+     *
+     * @param dimensionalFilter dimensions (key) and their values to filter
+     * @param ignoreNulls       filters in time series where a dimension in the filter is not set (value = null)
+     */
     public DimensionFilterFunction(Map<String, String> dimensionalFilter, boolean ignoreNulls) {
         this.ignoreNulls = ignoreNulls;
         this.dimensionalFilter = dimensionalFilter;

@@ -56,8 +56,11 @@ public class MetricTimeSeriesKey implements Serializable {
 
         EqualsBuilder eb = new EqualsBuilder();
         for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
-            if (dim == MetricDimensions.METRIC) eb.append(this.metric, that.metric);
-            else eb.append(this.attributes.get(dim.getId()), that.attributes.get(dim.getId()));
+            if (dim == MetricDimensions.METRIC) {
+                eb.append(this.metric, that.metric);
+            } else {
+                eb.append(this.attributes.get(dim.getId()), that.attributes.get(dim.getId()));
+            }
         }
         return eb.isEquals();
     }
@@ -67,8 +70,11 @@ public class MetricTimeSeriesKey implements Serializable {
         HashCodeBuilder hb = new HashCodeBuilder(17, 37);
 
         for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
-            if (dim == MetricDimensions.METRIC) hb.append(this.metric);
-            else hb.append(this.attributes.get(dim.getId()));
+            if (dim == MetricDimensions.METRIC) {
+                hb.append(this.metric);
+            } else {
+                hb.append(this.attributes.get(dim.getId()));
+            }
         }
 
         return hb.toHashCode();

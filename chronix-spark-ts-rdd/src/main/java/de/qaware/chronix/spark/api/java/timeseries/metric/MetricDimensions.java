@@ -33,16 +33,25 @@ public enum MetricDimensions {
         this.id = id;
     }
 
+    /**
+     * Provides the set of dimensions being the identify for a time series.
+     *
+     * @return an array of dimensions being the identity for a time series
+     */
     public static MetricDimensions[] getIdentityDimensions() {
         return new MetricDimensions[]{
                 METRIC, HOST, MEASUREMENT_SERIES, PROCESS, METRIC_GROUP, AGGREGATION_LEVEL
         };
     }
 
+    /**
+     * @return the dimension Id
+     */
     public String getId() {
         return id;
     }
 
+    @Override
     public String toString() {
         return id;
     }

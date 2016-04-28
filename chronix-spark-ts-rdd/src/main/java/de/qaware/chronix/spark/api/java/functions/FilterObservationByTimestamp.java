@@ -50,7 +50,7 @@ public class FilterObservationByTimestamp implements FilterFunction<MetricObserv
     }
 
     @Override
-    public boolean call(MetricObservation value) throws Exception {
+    public boolean call(MetricObservation value) {
         return value.getTimestamp() >= timestamp - range && value.getTimestamp() <= timestamp + range;
     }
 }

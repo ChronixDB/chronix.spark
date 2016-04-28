@@ -58,6 +58,9 @@ public class ChronixSolrCloudStorageMock extends ChronixSolrCloudStorage<MetricT
         return readTestData();
     }
 
+    /**
+     * @return a stream of time series containing test data
+     */
     private Stream<MetricTimeSeries> readTestData() {
         Kryo kryo = new Kryo();
         try {

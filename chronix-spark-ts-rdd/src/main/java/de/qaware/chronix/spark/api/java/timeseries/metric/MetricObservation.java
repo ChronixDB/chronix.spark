@@ -71,18 +71,33 @@ public class MetricObservation implements Serializable {
         this.value = value;
     }
 
+    /**
+     * @return the metric
+     */
     public String getMetric() {
         return metric;
     }
 
+    /**
+     *
+     * @param metric the metric
+     */
     public void setMetric(String metric) {
         this.metric = metric;
     }
 
+    /**
+     *
+     * @return the host
+     */
     public String getHost() {
         return host;
     }
 
+    /**
+     *
+     * @param host the host
+     */
     public void setHost(String host) {
         this.host = host;
     }
@@ -107,42 +122,82 @@ public class MetricObservation implements Serializable {
         this.measurementSeries = measurementSeries;
     }
 
+    /**
+     *
+     * @return the process
+     */
     public String getProcess() {
         return process;
     }
 
+    /**
+     *
+     * @param process the process
+     */
     public void setProcess(String process) {
         this.process = process;
     }
 
+    /**
+     *
+     * @return the aggregation level
+     */
     public String getAg() {
         return ag;
     }
 
+    /**
+     *
+     * @param ag the aggregation level
+     */
     public void setAg(String ag) {
         this.ag = ag;
     }
 
+    /**
+     *
+     * @return the timestamp
+     */
     public long getTimestamp() {
         return timestamp;
     }
 
+    /**
+     *
+     * @param timestamp the timestamp
+     */
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
+    /**
+     *
+     * @return the metric group
+     */
     public String getGroup() {
         return group;
     }
 
+    /**
+     *
+     * @param group the metric group
+     */
     public void setGroup(String group) {
         this.group = group;
     }
 
+    /**
+     *
+     * @return the value at the timestamp
+     */
     public double getValue() {
         return value;
     }
 
+    /**
+     *
+     * @param value the value at the timestamp
+     */
     public void setValue(double value) {
         this.value = value;
     }

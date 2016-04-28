@@ -30,11 +30,18 @@ import javax.annotation.Nullable;
 public class MetricTimeSeriesOrdering extends Ordering<MetricTimeSeries> {
     @Override
     public int compare(@Nullable MetricTimeSeries left, @Nullable MetricTimeSeries right) {
-        if (left == null && right == null) return 0;
-        else if (left == null) return -1;
-        else if (right == null) return 1;
-        else if (left.getStart() < right.getStart()) return -1;
-        else if (left.getStart() == right.getStart()) return 0;
-        else return 1;
+        if (left == null && right == null) {
+            return 0;
+        } else if (left == null) {
+            return -1;
+        } else if (right == null) {
+            return 1;
+        } else if (left.getStart() < right.getStart()) {
+            return -1;
+        } else if (left.getStart() == right.getStart()) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 }
