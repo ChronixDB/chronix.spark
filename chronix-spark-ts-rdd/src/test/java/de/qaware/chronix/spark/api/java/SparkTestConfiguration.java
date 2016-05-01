@@ -40,7 +40,7 @@ public class SparkTestConfiguration {
 
     // GLOBAL configuration ******************************************************
     public static final String APP_NAME = "Spark Chronix";
-    public static final String SOLR_REFERNCE_QUERY = "metric:\"java.lang:type=Memory/HeapMemoryUsage/used\"";
+    public static final String SOLR_REFERENCE_QUERY = "metric:\"java.lang:type=Memory/HeapMemoryUsage/used\"";
     public static final String DEFAULT_TESTDATA_FILE = "timeseries-testdata.bin";
     public static final String CONFIG_PROPERTY = "CONFIG_PROFILE";
 

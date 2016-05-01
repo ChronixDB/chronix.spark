@@ -37,7 +37,7 @@ class TestChronixSparkContext extends Specification {
     def setup() {
         sc = SparkTestConfiguration.createSparkContext();
         csc = new ChronixSparkContext(sc);
-        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY)
+        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY)
     }
 
     def "testChronixQuery"() {
@@ -66,6 +66,7 @@ class TestChronixSparkContext extends Specification {
             println mts
             //TODO: check ordering in time series
             //TODO: check duplicates according time series identity (and eliminate the assert below which is fragile)
+            //TODO: check if compareTo(), hashCode() and equals() is correct (Key)
         }
         Assert.assertTrue(resultChunked.count() >= result.count())
     }

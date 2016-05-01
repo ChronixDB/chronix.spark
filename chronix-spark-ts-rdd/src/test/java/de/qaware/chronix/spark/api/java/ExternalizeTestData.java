@@ -66,7 +66,7 @@ public class ExternalizeTestData {
             ChronixSparkContext csc = new ChronixSparkContext(sc);
 
             //Read data into ChronixRDD
-            SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY);
+            SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY);
             ChronixRDD rdd = csc.queryChronixChunks(query,
                     SparkTestConfiguration.ZK_HOST,
                     SparkTestConfiguration.CHRONIX_COLLECTION,

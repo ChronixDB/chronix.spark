@@ -49,7 +49,7 @@ class TestChronixRDD extends Specification {
         sc = SparkTestConfiguration.createSparkContext();
         csc = new ChronixSparkContext(sc);
         sqlContext = new SQLContext(sc);
-        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERNCE_QUERY);
+        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY);
         rdd = csc.query(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE);
     }
 
