@@ -21,6 +21,7 @@ import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
@@ -45,6 +46,9 @@ public class ChronixSparkContext implements Serializable {
         this.jsc = jsc;
     }
 
+    public ChronixSparkContext(SparkContext sc) {
+        this.jsc = JavaSparkContext.fromSparkContext(sc);
+    }
 
     /**
      * Returns the associated Spark Context.
