@@ -1,3 +1,3 @@
 echo "CHRONIX SPARK ###############################################################"
-echo "Starting Zeppelin ..."
+echo "Stopping Zeppelin ..."
 ./zeppelin/bin/zeppelin-daemon.sh stop
