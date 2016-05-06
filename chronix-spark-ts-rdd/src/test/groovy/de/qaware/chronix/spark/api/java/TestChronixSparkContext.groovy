@@ -64,9 +64,6 @@ class TestChronixSparkContext extends Specification {
         println "Joined: " + joined
         for (MetricTimeSeries mts : result.collect()) {
             println mts
-            //TODO: check ordering in time series
-            //TODO: check duplicates according time series identity (and eliminate the assert below which is fragile)
-            //TODO: check if compareTo(), hashCode() and equals() is correct (Key)
         }
         Assert.assertTrue(resultChunked.count() >= result.count())
     }

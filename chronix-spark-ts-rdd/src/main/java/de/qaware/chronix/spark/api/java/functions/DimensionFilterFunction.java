@@ -50,7 +50,6 @@ public class DimensionFilterFunction implements Function<MetricTimeSeries, Boole
 
     @Override
     public Boolean call(MetricTimeSeries mts) {
-        //TODO: improve tests and make method right
         for (Map.Entry<String, String> entry : dimensionalFilter.entrySet()) {
             String value = (String) mts.attribute(entry.getKey());
             if (value == null && !ignoreNulls) return false;

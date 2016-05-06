@@ -29,8 +29,6 @@ import java.util.Iterator;
  */
 public class SolrTupleStreamingService implements Iterator<MetricTimeSeries> {
 
-    //TODO: Align with SolrStreamingService
-
     private CloudSolrStream solrStream;
     private TimeSeriesConverter<MetricTimeSeries> converter;
 
