@@ -115,10 +115,8 @@ class TestChronixRDD extends Specification {
     }
 
     def "test data frame"() {
-        given:
-        DataFrame df = rdd.toDataFrame(sqlContext);
         when:
-        df.show();
+        DataFrame df = rdd.toDataFrame(sqlContext);
         then:
         //Assert that all columns are available
         List<String> columns = Arrays.asList(df.columns());
@@ -128,7 +126,12 @@ class TestChronixRDD extends Specification {
             assertTrue(columns.contains(dim.getId()));
         }
         //Assert that DataFrame is not empty
+        df.show()
         assertTrue(df.count() > 0);
+
+        DataFrame dfRes = df.select("value", "process").where("process=\"jenkins-jolokia\"")
+        dfRes.show()
+        assertTrue(dfRes.count() > 0)
     }
 
     def "test dataset"() {
