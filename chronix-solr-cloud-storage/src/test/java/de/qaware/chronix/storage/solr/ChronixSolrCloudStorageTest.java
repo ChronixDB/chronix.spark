@@ -18,6 +18,7 @@ package de.qaware.chronix.storage.solr;
 import de.qaware.chronix.converter.KassiopeiaSimpleConverter;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class ChronixSolrCloudStorageTest {
     public static final String SOLR_REFERENCE_QUERY = "metric:\"java.lang:type=Memory/HeapMemoryUsage/used\"";
 
     @Test
+    @Ignore
     /**
      * manual URL:
      * http://localhost:8983/solr/chronix_shard1_replica1/export?q=*:*&fl=metric&sort=id+asc
