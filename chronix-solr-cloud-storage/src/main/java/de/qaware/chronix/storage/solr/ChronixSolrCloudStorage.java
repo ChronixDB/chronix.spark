@@ -43,7 +43,7 @@ public class ChronixSolrCloudStorage implements Serializable {
     public static final int CHRONIX_DEFAULT_PAGESIZE = 1000;
     private static final long serialVersionUID = 42L;
     private final int nrOfDocumentPerBatch;
-    private static final boolean EXPORT_HANDLER_STREAM = false;
+    private boolean flagUseExportHandlerProtocol = false;
 
 
     /**
@@ -63,6 +63,20 @@ public class ChronixSolrCloudStorage implements Serializable {
     }
 
     /**
+     * Switches the Solr protocol to tuple structures via export handler
+     */
+    public void switchToSolrTupleExport() {
+        flagUseExportHandlerProtocol = true;
+    }
+
+    /**
+     * Switches the Solr protocol to binary JSON documents
+     */
+    public void switchToSolrBinaryJSONs() {
+        flagUseExportHandlerProtocol = false;
+    }
+
+    /**
      * Fetches a stream of time series only from a single node.
      *
      * @param shardUrl  the URL of the shard pointing to a single node
@@ -75,7 +89,7 @@ public class ChronixSolrCloudStorage implements Serializable {
                                                          String shardUrl,
                                                          SolrQuery query,
                                                          TimeSeriesConverter<MetricTimeSeries> converter) throws IOException {
-        if (EXPORT_HANDLER_STREAM) {
+        if (flagUseExportHandlerProtocol) {
             return streamWithCloudSolrStream(zkHost, collection, shardUrl, query, converter);
         } else {
             return streamWithHttpSolrClient(shardUrl, query, converter);
