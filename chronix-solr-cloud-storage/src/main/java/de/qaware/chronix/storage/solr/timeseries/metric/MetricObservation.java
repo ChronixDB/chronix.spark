@@ -16,6 +16,8 @@
 package de.qaware.chronix.storage.solr.timeseries.metric;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * A metric observation datatype.
@@ -170,6 +172,26 @@ public class MetricObservation implements Serializable {
         this.timestamp = timestamp;
     }
 
+
+    /**
+     * Returns a Timestamp object which can be better
+     * used in Spark SQL and/or Zeppelin.
+     *
+     * @return a Timestamp object
+     */
+    public Timestamp getTimestampObject() {
+        return Timestamp.from(Instant.ofEpochMilli(timestamp));
+    }
+
+    /**
+     * Sets the timestamp (milliseconds since 1.1.1970)
+     *
+     * @param ts the Timestamp object
+     */
+    public void setTimestampObject(Timestamp ts) {
+        this.timestamp = ts.getTime();
+    }
+
     /**
      *
      * @return the metric group
@@ -246,7 +268,7 @@ public class MetricObservation implements Serializable {
                 ", process='" + process + '\'' +
                 ", ag='" + ag + '\'' +
                 ", group='" + group + '\'' +
-                ", timestamp=" + timestamp +
+                ", timestamp=" + getTimestampObject().toString() +
                 ", value=" + value +
                 '}';
     }
