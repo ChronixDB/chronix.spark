@@ -15,6 +15,7 @@
  */
 package de.qaware.chronix.spark.api.java
 
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeriesKey
 import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
@@ -49,7 +50,7 @@ class TestChronixSparkContext extends Specification {
         then:
         Assert.assertTrue(timeSeries.size() == 5)
         for (MetricTimeSeries ts : timeSeries) {
-            System.out.println(ts.toString());
+            System.out.println(ts.toString())
         }
     }
 
@@ -62,9 +63,45 @@ class TestChronixSparkContext extends Specification {
         long joined = result.count()
         println "Chunked: " + chunked
         println "Joined: " + joined
-        for (MetricTimeSeries mts : result.collect()) {
-            println mts
-        }
         Assert.assertTrue(resultChunked.count() >= result.count())
+
+        Set<MetricTimeSeriesKey> keys = new HashSet<>();
+        int incorrectCnt = 0;
+        int correctCnt = 0;
+
+        println "CHUNKED *****************"
+        for (MetricTimeSeries mts : resultChunked.collect()) {
+            //check ordering
+            long prevTimeStamp = 0.0
+            for (Long timeStamp : mts.getTimestampsAsArray()) {
+                Assert.assertTrue(mts.getStart() <= timeStamp &&
+                        timeStamp <= mts.getEnd())
+                Assert.assertTrue(timeStamp > prevTimeStamp)
+                prevTimeStamp = timeStamp
+            }
+        }
+
+        println "JOINED ******************"
+        for (MetricTimeSeries mts : result.collect()) {
+            //check identity
+            MetricTimeSeriesKey mtsKey = new MetricTimeSeriesKey(mts)
+            Assert.assertTrue(!keys.contains(mtsKey))
+            keys.add(mtsKey)
+            //check ordering
+            long prevTimeStamp = 0.0
+            for (Long timeStamp : mts.getTimestampsAsArray()) {
+                Assert.assertTrue(mts.getStart() <= timeStamp &&
+                        timeStamp <= mts.getEnd())
+                if (timeStamp > prevTimeStamp) correctCnt++
+                else {
+                    incorrectCnt++
+                    println mts.metric
+                    println "Incorrect timestamps: " + timeStamp + " < " + prevTimeStamp
+                }
+                prevTimeStamp = timeStamp
+            }
+        }
+        println "Incorrect ordering: " + incorrectCnt
+        println "Correct ordering: " + correctCnt
     }
 }

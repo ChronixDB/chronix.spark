@@ -17,8 +17,11 @@ package de.qaware.chronix.storage.solr.timeseries.metric;
 
 import com.google.common.collect.Ordering;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Orders MetricTimeSeries by their start timestamp
@@ -31,6 +34,9 @@ public class MetricTimeSeriesOrdering extends Ordering<MetricTimeSeries> impleme
 
     private static final long serialVersionUID = 42L;
 
+    private final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesOrdering.class);
+
+
     @Override
     public int compare(MetricTimeSeries left, MetricTimeSeries right) {
         if (left == null && right == null) {
@@ -40,11 +46,30 @@ public class MetricTimeSeriesOrdering extends Ordering<MetricTimeSeries> impleme
         } else if (right == null) {
             return 1;
         } else if (left.getStart() < right.getStart()) {
+            if (left.getEnd() >= right.getStart()) printTimeseriesDescription(left, right);
             return -1;
         } else if (left.getStart() == right.getStart()) {
             return 0;
         } else {
+            if (left.getEnd() <= right.getStart()) printTimeseriesDescription(left, right);
             return 1;
         }
+    }
+
+    private void printTimeseriesDescription(MetricTimeSeries left, MetricTimeSeries right) {
+        LOGGER.error("Detected intersecting time series chunks:");
+        LOGGER.error(
+                "LEFT: {}", getTimeseriesIntervalDescription(left)
+        );
+        LOGGER.error(
+                "RIGHT: {}", getTimeseriesIntervalDescription(right)
+        );
+    }
+
+    private String getTimeseriesIntervalDescription(MetricTimeSeries mts) {
+        String start = new Date(mts.getStart()).toString();
+        String end = new Date(mts.getEnd()).toString();
+        StringBuffer sb = new StringBuffer();
+        return sb.append(start).append(", ").append(end).toString();
     }
 }
