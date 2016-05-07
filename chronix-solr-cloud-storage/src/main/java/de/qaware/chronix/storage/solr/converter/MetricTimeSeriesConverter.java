@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class MetricTimeSeriesConverter implements TimeSeriesConverter<TimeSeries<Long, Double>> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesConverter.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesConverter.class);
 
     @Override
     public TimeSeries<Long, Double> from(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd) {

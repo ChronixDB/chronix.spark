@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
  */
 public class TimeSeriesConverterCaller<T> implements Callable<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TimeSeriesConverterCaller.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(TimeSeriesConverterCaller.class);
 
     private final SolrDocument document;
     private final TimeSeriesConverter<T> documentConverter;

@@ -44,7 +44,7 @@ public class SolrStreamingService<T> implements Iterator<T> {
     /**
      * The class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SolrStreamingService.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(SolrStreamingService.class);
 
     /**
      * The query and connection to solr

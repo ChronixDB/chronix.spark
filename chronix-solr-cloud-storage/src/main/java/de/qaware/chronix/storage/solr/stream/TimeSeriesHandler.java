@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class TimeSeriesHandler<T> implements FutureCallback<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TimeSeriesHandler.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(TimeSeriesHandler.class);
     /**
      * The blocking queue containing elements of type t
      */
