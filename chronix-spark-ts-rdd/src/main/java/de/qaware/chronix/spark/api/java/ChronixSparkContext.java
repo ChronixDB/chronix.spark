@@ -42,10 +42,22 @@ public class ChronixSparkContext implements Serializable {
 
     private final transient JavaSparkContext jsc;
 
+    /**
+     * Default constructor for a ChronixSparkContext.
+     *
+     * @param jsc an initialized JavaSparkContext
+     */
     public ChronixSparkContext(JavaSparkContext jsc) {
         this.jsc = jsc;
     }
 
+    /**
+     * Additional constructor for a ChronixSparkContext to be
+     * constructed from a plain SparkContext. for convenience if
+     * used in Apache Zeppelin.
+     *
+     * @param sc an initialized SparkContext
+     */
     public ChronixSparkContext(SparkContext sc) {
         this.jsc = JavaSparkContext.fromSparkContext(sc);
     }
