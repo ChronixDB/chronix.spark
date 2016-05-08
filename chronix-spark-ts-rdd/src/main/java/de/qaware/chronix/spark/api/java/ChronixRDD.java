@@ -165,7 +165,6 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
     public ChronixRDD joinChunks() {
         JavaPairRDD<MetricTimeSeriesKey, Iterable<MetricTimeSeries>> groupRdd
                 = this.groupBy(MetricTimeSeriesKey::new);
-        groupRdd.cache();
 
         JavaPairRDD<MetricTimeSeriesKey, MetricTimeSeries> joinedRdd
                 = groupRdd.mapValues((Function<Iterable<MetricTimeSeries>, MetricTimeSeries>) mtsIt -> {
