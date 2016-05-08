@@ -57,11 +57,11 @@ public class MetricTimeSeriesOrdering extends Ordering<MetricTimeSeries> impleme
     }
 
     private void printTimeseriesDescription(MetricTimeSeries left, MetricTimeSeries right) {
-        LOGGER.error("Detected intersecting time series chunks:");
-        LOGGER.error(
+        LOGGER.warn("Detected intersecting time series chunks:");
+        LOGGER.warn(
                 "LEFT: {}", getTimeseriesIntervalDescription(left)
         );
-        LOGGER.error(
+        LOGGER.warn(
                 "RIGHT: {}", getTimeseriesIntervalDescription(right)
         );
     }
