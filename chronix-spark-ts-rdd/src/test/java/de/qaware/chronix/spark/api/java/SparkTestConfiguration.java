@@ -34,8 +34,7 @@ public class SparkTestConfiguration {
     // INDIVIDUAL configuration **************************************************
     public static final String SPARK_HISTORY_DIR = "/tmp";
     public static final String[] JARS = new String[]{
-            "/Users/qaware-jad/Documents/projekte/chronix/chronix.spark/chronix-solr-cloud-storage/build/libs/chronix-solr-cloud-storage-0.1.jar",
-            "/Users/qaware-jad/Documents/projekte/chronix/chronix.spark/chronix-spark-ts-rdd/build/libs/chronix-spark-ts-rdd-0.1.jar"
+            "/Users/qaware-jad/Documents/projekte/chronix/chronix.spark/chronix-spark-ts-rdd/build/libs/chronix-spark-ts-rdd-0.3.jar"
     };
 
     // GLOBAL configuration ******************************************************

@@ -15,7 +15,6 @@
  */
 package de.qaware.chronix.spark.api.java;
 
-import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation;
 import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -33,7 +32,7 @@ import java.util.Iterator;
  */
 public class TestPerformanceRegression {
 
-    private static final long LOOPS = 2;
+    private static final long LOOPS = 4;
 
     /**
      * ----------------------------------------------------
@@ -66,11 +65,10 @@ public class TestPerformanceRegression {
 
                 //Read data into ChronixRDD
                 SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY);
-                ChronixRDD rdd = csc.queryChronixChunks(query,
+                ChronixRDD rdd = csc.query(query,
                         SparkTestConfiguration.ZK_HOST,
                         SparkTestConfiguration.CHRONIX_COLLECTION,
-                        new ChronixSolrCloudStorage());
-                rdd.cache();
+                        SparkTestConfiguration.STORAGE);
 
                 //Some actions
                 double mean = rdd.mean();
