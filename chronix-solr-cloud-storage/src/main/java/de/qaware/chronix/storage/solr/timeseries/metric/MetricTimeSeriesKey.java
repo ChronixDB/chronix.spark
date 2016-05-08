@@ -20,8 +20,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * Represents the identity of a MetricTimeSeries.
@@ -31,20 +29,19 @@ public class MetricTimeSeriesKey implements Serializable {
 
     private static final long serialVersionUID = 42L;
 
-    private final String metric;
-    private final Map<String, Object> attributes;
+    private MetricTimeSeries mts;
 
+    /**
+     * Default constructor
+     *
+     * @param mts
+     */
     public MetricTimeSeriesKey(MetricTimeSeries mts) {
-        this.metric = mts.getMetric();
-        this.attributes = mts.attributes();
+        this.mts = mts;
     }
 
-    public String getMetric() {
-        return metric;
-    }
-
-    public Map<String, Object> getAttributes() {
-        return Collections.unmodifiableMap(attributes);
+    private MetricTimeSeries getMetricTimeSeries() {
+        return mts;
     }
 
     @Override
@@ -57,9 +54,10 @@ public class MetricTimeSeriesKey implements Serializable {
         EqualsBuilder eb = new EqualsBuilder();
         for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
             if (dim == MetricDimensions.METRIC) {
-                eb.append(this.metric, that.metric);
+                eb.append(mts.getMetric(), that.getMetricTimeSeries().getMetric());
             } else {
-                eb.append(this.attributes.get(dim.getId()), that.attributes.get(dim.getId()));
+                eb.append(mts.attributes().get(dim.getId()),
+                        that.getMetricTimeSeries().attributes().get(dim.getId()));
             }
         }
         return eb.isEquals();
@@ -71,9 +69,9 @@ public class MetricTimeSeriesKey implements Serializable {
 
         for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
             if (dim == MetricDimensions.METRIC) {
-                hb.append(this.metric);
+                hb.append(mts.getMetric());
             } else {
-                hb.append(this.attributes.get(dim.getId()));
+                hb.append(mts.attributes().get(dim.getId()));
             }
         }
 
