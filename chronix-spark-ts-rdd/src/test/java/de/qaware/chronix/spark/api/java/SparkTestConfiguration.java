@@ -28,6 +28,7 @@ public class SparkTestConfiguration {
 
     public enum Profile {
         IN_PROCESS,
+        IN_PROCESS_WITH_SOLR,
         LOCAL
     }
 
@@ -64,7 +65,7 @@ public class SparkTestConfiguration {
     private static JavaSparkContext jsc;
 
     static {
-        System.setProperty(CONFIG_PROPERTY, Profile.IN_PROCESS.name());
+        System.setProperty(CONFIG_PROPERTY, Profile.LOCAL.name());
     }
 
     public static JavaSparkContext createSparkContext() {
@@ -76,6 +77,12 @@ public class SparkTestConfiguration {
             CHRONIX_COLLECTION = CHRONIX_COLLECTION_LOCAL;
             ZK_HOST = ZK_HOST_LOCAL;
             SPARK_MASTER = SPARK_MASTER_LOCAL;
+            STORAGE = STORAGE_LOCAL;
+        } else if (System.getProperty(CONFIG_PROPERTY).equals(Profile.IN_PROCESS_WITH_SOLR.name())) {
+            System.out.println("Activating profile IN_PROCESS_WITH_SOLR");
+            CHRONIX_COLLECTION = CHRONIX_COLLECTION_LOCAL;
+            ZK_HOST = ZK_HOST_LOCAL;
+            SPARK_MASTER = SPARK_MASTER_IN_PROCESS;
             STORAGE = STORAGE_LOCAL;
         } else {
             System.out.println("Activating profile IN_PROCESS");

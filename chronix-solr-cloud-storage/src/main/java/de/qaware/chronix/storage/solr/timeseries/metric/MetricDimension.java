@@ -19,7 +19,7 @@ package de.qaware.chronix.storage.solr.timeseries.metric;
  * Enum type containing all dimensions for
  * an metric observation and a metric time series in general.
  */
-public enum MetricDimensions {
+public enum MetricDimension {
     METRIC("metric"),
     HOST("host"),
     MEASUREMENT_SERIES("measurement"),
@@ -29,7 +29,7 @@ public enum MetricDimensions {
 
     private final String id;
 
-    MetricDimensions(String id) {
+    MetricDimension(String id) {
         this.id = id;
     }
 
@@ -38,8 +38,8 @@ public enum MetricDimensions {
      *
      * @return an array of dimensions being the identity for a time series
      */
-    public static MetricDimensions[] getIdentityDimensions() {
-        return new MetricDimensions[]{
+    public static MetricDimension[] getIdentityDimensions() {
+        return new MetricDimension[]{
                 METRIC, HOST, MEASUREMENT_SERIES, PROCESS, METRIC_GROUP, AGGREGATION_LEVEL
         };
     }
@@ -49,6 +49,36 @@ public enum MetricDimensions {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Returns a MetricDimension according the given ordinal value.
+     *
+     * @param ordinal the ordinal value of the enum
+     * @return the MetricDimension or null if no corresponding MetricDimension is found
+     */
+    public static MetricDimension getByOrdinal(int ordinal) {
+        for (MetricDimension dim : MetricDimension.values()) {
+            if (dim.ordinal() == ordinal) {
+                return dim;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a MetricDimension by its id.
+     *
+     * @param id the id of a MetricDimension
+     * @return the MetricDimension or null if no corresponding MetricDimension is found
+     */
+    public static MetricDimension getById(String id) {
+        for (MetricDimension dim : MetricDimension.values()) {
+            if (dim.getId().equals(id)) {
+                return dim;
+            }
+        }
+        return null;
     }
 
     @Override

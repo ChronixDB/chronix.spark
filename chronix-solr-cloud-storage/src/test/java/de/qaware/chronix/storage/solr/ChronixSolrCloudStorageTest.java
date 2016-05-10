@@ -15,8 +15,8 @@
  */
 package de.qaware.chronix.storage.solr;
 
-import de.qaware.chronix.converter.KassiopeiaSimpleConverter;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.converter.MetricTimeSeriesConverter;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class ChronixSolrCloudStorageTest {
         //cs.switchToSolrTupleExport();
         List<String> shards = cs.getShardList(ZK_HOST, COLLECTION);
         for (String shard : shards) {
-            Stream<MetricTimeSeries> mtss = cs.streamFromSingleNode(ZK_HOST, COLLECTION, shard, new SolrQuery(SOLR_REFERENCE_QUERY), new KassiopeiaSimpleConverter());
+            Stream<MetricTimeSeries> mtss = cs.streamFromSingleNode(ZK_HOST, COLLECTION, shard, new SolrQuery(SOLR_REFERENCE_QUERY), new MetricTimeSeriesConverter());
             mtss.collect(Collectors.toList()).forEach(System.out::println);
         }
 

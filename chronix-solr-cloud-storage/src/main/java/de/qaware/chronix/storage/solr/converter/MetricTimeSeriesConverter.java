@@ -15,86 +15,84 @@
  */
 package de.qaware.chronix.storage.solr.converter;
 
-import de.qaware.chronix.Schema;
+
 import de.qaware.chronix.converter.BinaryTimeSeries;
 import de.qaware.chronix.converter.TimeSeriesConverter;
-import de.qaware.chronix.dts.Pair;
-import de.qaware.chronix.timeseries.TimeSeries;
-import de.qaware.ekg.collector.storage.protocol.ProtocolBuffer;
+import de.qaware.chronix.converter.common.MetricTSSchema;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimension;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
- * Converter for Chronix to convert
+ * The kassiopeia time series converter for the simple time series class
  *
  * @author f.lautenschlager
- * @author l.buchner
  */
-public class MetricTimeSeriesConverter implements TimeSeriesConverter<TimeSeries<Long, Double>> {
+public class MetricTimeSeriesConverter implements TimeSeriesConverter<MetricTimeSeries> {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesConverter.class);
+
+    public static final String DATA_AS_JSON_FIELD = "dataAsJson";
+    public static final String DATA_FUNCTION_VALUE = "function_value";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetricTimeSeriesConverter.class);
 
     @Override
-    public TimeSeries<Long, Double> from(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd) {
-        try {
+    public MetricTimeSeries from(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd) {
+        LOGGER.debug("Converting {} to MetricTimeSeries starting at {} and ending at {}", binaryTimeSeries, queryStart, queryEnd);
+        //get the metric
+        String metric = binaryTimeSeries.get(MetricTSSchema.METRIC).toString();
 
-            String blob = (String) binaryTimeSeries.get(Schema.DATA);
-            ProtocolBuffer.Points protocolBufferPoints = Util.loadIntoProtocolBuffers(blob);
+        //Third build a minimal time series
+        MetricTimeSeries.Builder builder = new MetricTimeSeries.Builder(metric);
 
-            Iterator<Pair<Long, Double>> iter = protocolBufferPoints.getPointsList().stream().map(p -> Pair.pairOf(p.getDate(), p.getValue())).iterator();
-            TimeSeries<Long, Double> timeSeries = new TimeSeries<>(iter);
-
-            binaryTimeSeries.getFields().forEach((field, value) -> {
-                if (Schema.isUserDefined(field)) {
-                    //Add attributes
-                    timeSeries.addAttribute(field, value);
+        //add all user defined attributes
+        binaryTimeSeries.getFields().forEach((field, value) -> {
+            if (MetricTSSchema.isUserDefined(field)) {
+                MetricDimension dim = MetricDimension.getById(field);
+                if (dim != null) { //ignore non-dimensional attributes
+                    builder.attribute(dim, value.toString());
                 }
-            });
+            }
+        });
 
-            //convert start and end to long
-            Date start = (Date) binaryTimeSeries.get(Schema.START);
-            Date end = (Date) binaryTimeSeries.get(Schema.END);
-            timeSeries.addAttribute(Schema.START, start.getTime());
-            timeSeries.addAttribute(Schema.END, end.getTime());
+        //Default serialization is protocol buffers.
+        if (binaryTimeSeries.getPoints().length > 0) {
+            fromProtocolBuffers(binaryTimeSeries, queryStart, queryEnd, builder);
 
-            return timeSeries;
+        } else if (binaryTimeSeries.getFields().containsKey(DATA_AS_JSON_FIELD)) {
+            //do it from json
+            fromJson(binaryTimeSeries, queryStart, queryEnd, builder);
 
-        } catch (IOException e) {
-            LOGGER.error("Could not convert binary time series to metric time series.", e);
+        } else if (binaryTimeSeries.get(DATA_FUNCTION_VALUE) != null) {
+            //we have a function (aggregation) result
+            double value = Double.valueOf(binaryTimeSeries.get(DATA_FUNCTION_VALUE).toString());
+            long meanDate = meanDate(binaryTimeSeries);
+            builder.point(meanDate, value);
         }
-        return null;
+
+        return builder.build();
+    }
+
+    private void fromProtocolBuffers(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd, MetricTimeSeries.Builder builder) {
+        ProtoBufMetricTimeSeriesSerializer.from(binaryTimeSeries.getPoints(), binaryTimeSeries.getStart(), binaryTimeSeries.getEnd(), queryStart, queryEnd, builder);
+    }
+
+    private void fromJson(BinaryTimeSeries binaryTimeSeries, long queryStart, long queryEnd, MetricTimeSeries.Builder builder) {
+        throw new UnsupportedOperationException();
+    }
+
+    private long meanDate(BinaryTimeSeries binaryTimeSeries) {
+        long start = binaryTimeSeries.getStart();
+        long end = binaryTimeSeries.getEnd();
+
+        return start + ((end - start) / 2);
     }
 
     @Override
-    public BinaryTimeSeries to(TimeSeries<Long, Double> document) {
-        BinaryTimeSeries.Builder binaryTimeSeries = new BinaryTimeSeries.Builder();
-
-        //Add attributes
-        Iterator<Map.Entry<String, Object>> it = document.getAttributes();
-        while (it.hasNext()) {
-            Map.Entry<String, Object> entry = it.next();
-            binaryTimeSeries.field(entry.getKey(), entry.getValue());
-        }
-
-        //Add points
-        ProtocolBuffer.Points.Builder builder = ProtocolBuffer.Points.newBuilder();
-        ProtocolBuffer.Point.Builder pointBuilder = ProtocolBuffer.Point.newBuilder();
-        for (Pair<Long, Double> point : document) {
-            if (point.getFirst() != null) {
-                builder.addPoints(pointBuilder.setDate(point.getFirst()).setValue(point.getSecond()));
-            }
-        }
-
-        //add the data field to the binary time series
-        String data = Util.fromProtocolBuffersToChunk(builder.build());
-        binaryTimeSeries.field(Schema.DATA, data);
-
-        return binaryTimeSeries.build();
+    public BinaryTimeSeries to(MetricTimeSeries timeSeries) {
+        throw new UnsupportedOperationException();
     }
 }
 

@@ -19,7 +19,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import de.qaware.chronix.converter.TimeSeriesConverter;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 
 import java.io.FileInputStream;

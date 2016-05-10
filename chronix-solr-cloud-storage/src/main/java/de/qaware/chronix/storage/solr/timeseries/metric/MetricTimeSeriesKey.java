@@ -15,7 +15,6 @@
  */
 package de.qaware.chronix.storage.solr.timeseries.metric;
 
-import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -52,12 +51,12 @@ public class MetricTimeSeriesKey implements Serializable {
         MetricTimeSeriesKey that = (MetricTimeSeriesKey) o;
 
         EqualsBuilder eb = new EqualsBuilder();
-        for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
-            if (dim == MetricDimensions.METRIC) {
+        for (MetricDimension dim : MetricDimension.getIdentityDimensions()) {
+            if (dim == MetricDimension.METRIC) {
                 eb.append(mts.getMetric(), that.getMetricTimeSeries().getMetric());
             } else {
-                eb.append(mts.attributes().get(dim.getId()),
-                        that.getMetricTimeSeries().attributes().get(dim.getId()));
+                eb.append(mts.attributes().get(dim),
+                        that.getMetricTimeSeries().attributes().get(dim));
             }
         }
         return eb.isEquals();
@@ -67,11 +66,11 @@ public class MetricTimeSeriesKey implements Serializable {
     public int hashCode() {
         HashCodeBuilder hb = new HashCodeBuilder(17, 37);
 
-        for (MetricDimensions dim : MetricDimensions.getIdentityDimensions()) {
-            if (dim == MetricDimensions.METRIC) {
+        for (MetricDimension dim : MetricDimension.getIdentityDimensions()) {
+            if (dim == MetricDimension.METRIC) {
                 hb.append(mts.getMetric());
             } else {
-                hb.append(mts.attributes().get(dim.getId()));
+                hb.append(mts.attributes().get(dim));
             }
         }
 

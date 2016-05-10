@@ -179,7 +179,7 @@ public class MetricObservation implements Serializable {
      *
      * @return a Timestamp object
      */
-    public Timestamp getTimestampObject() {
+    public Timestamp getTime() {
         return Timestamp.from(Instant.ofEpochMilli(timestamp));
     }
 
@@ -188,7 +188,7 @@ public class MetricObservation implements Serializable {
      *
      * @param ts the Timestamp object
      */
-    public void setTimestampObject(Timestamp ts) {
+    public void setTime(Timestamp ts) {
         this.timestamp = ts.getTime();
     }
 
@@ -268,7 +268,7 @@ public class MetricObservation implements Serializable {
                 ", process='" + process + '\'' +
                 ", ag='" + ag + '\'' +
                 ", group='" + group + '\'' +
-                ", timestamp=" + getTimestampObject().toString() +
+                ", timestamp=" + getTime().toString() +
                 ", value=" + value +
                 '}';
     }

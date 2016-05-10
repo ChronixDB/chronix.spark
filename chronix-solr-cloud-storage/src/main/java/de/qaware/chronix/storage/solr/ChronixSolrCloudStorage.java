@@ -19,7 +19,7 @@ import de.qaware.chronix.Schema;
 import de.qaware.chronix.converter.TimeSeriesConverter;
 import de.qaware.chronix.storage.solr.stream.SolrStreamingService;
 import de.qaware.chronix.storage.solr.stream.SolrTupleStreamingService;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.CloudSolrClient;

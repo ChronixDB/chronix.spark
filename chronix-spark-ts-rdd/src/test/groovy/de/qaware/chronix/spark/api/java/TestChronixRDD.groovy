@@ -16,9 +16,9 @@
 package de.qaware.chronix.spark.api.java
 
 import de.qaware.chronix.spark.api.java.functions.FilterObservationByTimestamp
-import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimensions
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimension
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation
-import de.qaware.chronix.timeseries.MetricTimeSeries
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext
@@ -122,7 +122,7 @@ class TestChronixRDD extends Specification {
         List<String> columns = Arrays.asList(df.columns());
         assertTrue(columns.contains("timestamp"));
         assertTrue(columns.contains("value"));
-        for (MetricDimensions dim : MetricDimensions.values()) {
+        for (MetricDimension dim : MetricDimension.values()) {
             assertTrue(columns.contains(dim.getId()));
         }
         //Assert that DataFrame is not empty
@@ -154,8 +154,8 @@ class TestChronixRDD extends Specification {
     def "test filter functions"() {
         given:
         Map<String, String> dimFilter = new HashMap<>()
-        dimFilter.put("measurement", "20160317")
-        dimFilter.put("group", "jenkins-jmx")
+        dimFilter.put(MetricDimension.MEASUREMENT_SERIES, "20160317")
+        dimFilter.put(MetricDimension.METRIC_GROUP, "jenkins-jmx")
         when:
         ChronixRDD resRdd = rdd.filterByDimensions(dimFilter)
         then:

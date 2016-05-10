@@ -17,7 +17,7 @@ package de.qaware.chronix.storage.solr.stream;
 
 import de.qaware.chronix.converter.BinaryTimeSeries;
 import de.qaware.chronix.converter.TimeSeriesConverter;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.solr.client.solrj.io.Tuple;
 import org.apache.solr.client.solrj.io.stream.CloudSolrStream;
 

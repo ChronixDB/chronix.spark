@@ -15,8 +15,8 @@
  */
 package de.qaware.chronix.spark.api.java
 
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeriesKey
-import de.qaware.chronix.timeseries.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaSparkContext

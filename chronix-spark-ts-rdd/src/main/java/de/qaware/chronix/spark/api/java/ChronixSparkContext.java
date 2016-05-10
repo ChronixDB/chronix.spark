@@ -15,9 +15,9 @@
  */
 package de.qaware.chronix.spark.api.java;
 
-import de.qaware.chronix.converter.KassiopeiaSimpleConverter;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.converter.MetricTimeSeriesConverter;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.spark.SparkConf;
@@ -96,7 +96,7 @@ public class ChronixSparkContext implements Serializable {
         // parallelize the requests to the shards
         JavaRDD<MetricTimeSeries> docs = jsc.parallelize(shards, shards.size()).flatMap(
                 (FlatMapFunction<String, MetricTimeSeries>) shardUrl -> chronixStorage.streamFromSingleNode(
-                        zkHost, collection, shardUrl, query, new KassiopeiaSimpleConverter())::iterator);
+                        zkHost, collection, shardUrl, query, new MetricTimeSeriesConverter())::iterator);
         return new ChronixRDD(docs);
     }
 

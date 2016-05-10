@@ -15,7 +15,8 @@
  */
 package de.qaware.chronix.spark.api.java.functions;
 
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimension;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.spark.api.java.function.Function;
 
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.Map;
  */
 public class DimensionFilterFunction implements Function<MetricTimeSeries, Boolean> {
 
-    private Map<String, String> dimensionalFilter;
+    private Map<MetricDimension, String> dimensionalFilter;
     private boolean ignoreNulls = false;
 
     /**
@@ -33,7 +34,7 @@ public class DimensionFilterFunction implements Function<MetricTimeSeries, Boole
      *
      * @param dimensionalFilter dimensions (key) and their values to filter
      */
-    public DimensionFilterFunction(Map<String, String> dimensionalFilter) {
+    public DimensionFilterFunction(Map<MetricDimension, String> dimensionalFilter) {
         this.dimensionalFilter = dimensionalFilter;
     }
 
@@ -43,15 +44,15 @@ public class DimensionFilterFunction implements Function<MetricTimeSeries, Boole
      * @param dimensionalFilter dimensions (key) and their values to filter
      * @param ignoreNulls       filters in time series where a dimension in the filter is not set (value = null)
      */
-    public DimensionFilterFunction(Map<String, String> dimensionalFilter, boolean ignoreNulls) {
+    public DimensionFilterFunction(Map<MetricDimension, String> dimensionalFilter, boolean ignoreNulls) {
         this.ignoreNulls = ignoreNulls;
         this.dimensionalFilter = dimensionalFilter;
     }
 
     @Override
     public Boolean call(MetricTimeSeries mts) {
-        for (Map.Entry<String, String> entry : dimensionalFilter.entrySet()) {
-            String value = (String) mts.attribute(entry.getKey());
+        for (Map.Entry<MetricDimension, String> entry : dimensionalFilter.entrySet()) {
+            String value = mts.attribute(entry.getKey());
             if (value == null && !ignoreNulls) return false;
             else if (value == null && entry.getValue() != null) return false;
             else if (value == null && entry.getValue() == null) continue;

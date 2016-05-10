@@ -16,11 +16,7 @@
 package de.qaware.chronix.spark.api.java;
 
 import de.qaware.chronix.spark.api.java.functions.DimensionFilterFunction;
-import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimensions;
-import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation;
-import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeriesKey;
-import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeriesOrdering;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.timeseries.metric.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import org.apache.spark.api.java.JavaDoubleRDD;
@@ -34,6 +30,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SQLContext;
 import scala.Tuple2;
+import scala.reflect.ClassTag;
 import scala.reflect.ClassTag$;
 
 import java.util.Arrays;
@@ -56,8 +53,10 @@ import java.util.Map;
  */
 public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
 
+    private static ClassTag MTS_TYPE = ClassTag$.MODULE$.apply(MetricTimeSeries.class);
+
     public ChronixRDD(JavaRDD<MetricTimeSeries> tsRdd) {
-        super(tsRdd.rdd(), ClassTag$.MODULE$.apply(MetricTimeSeries.class));
+        super(tsRdd.rdd(), MTS_TYPE);
     }
 
     /**
@@ -142,7 +141,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @return time series according the filter criteria
      * @see DimensionFilterFunction
      */
-    public ChronixRDD filterByDimensions(Map<String, String> dimensionFilter) {
+    public ChronixRDD filterByDimensions(Map<MetricDimension, String> dimensionFilter) {
         return this.filterTimeSeries(new DimensionFilterFunction(dimensionFilter));
     }
 
@@ -153,7 +152,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @param ignoreNull      also include time series if dimensional value is null
      * @return time series according the filter criteria
      */
-    public ChronixRDD filterByDimensions(Map<String, String> dimensionFilter, boolean ignoreNull) {
+    public ChronixRDD filterByDimensions(Map<MetricDimension, String> dimensionFilter, boolean ignoreNull) {
         return this.filterTimeSeries(new DimensionFilterFunction(dimensionFilter, ignoreNull));
     }
 
@@ -175,7 +174,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
                 if (result == null) {
                     result = new MetricTimeSeries
                             .Builder(mts.getMetric())
-                            .attributes(mts.getAttributesReference()).build();
+                            .attributes(mts.attributes()).build();
                 }
                 result.addAll(mts.getTimestampsAsArray(), mts.getValuesAsArray());
             }
@@ -216,16 +215,16 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
     public JavaRDD<MetricObservation> toObservations() {
         return this.flatMap((FlatMapFunction<MetricTimeSeries, MetricObservation>) ts -> ts.points().map(point -> {
             //null-safe read of dimensional values
-            String host = ts.attributes().get(MetricDimensions.HOST.getId()) == null ? null
-                    : ts.attributes().get(MetricDimensions.HOST.getId()).toString();
-            String series = ts.attributes().get(MetricDimensions.MEASUREMENT_SERIES.getId()) == null ? null
-                    : ts.attributes().get(MetricDimensions.MEASUREMENT_SERIES.getId()).toString();
-            String process = ts.attributes().get(MetricDimensions.PROCESS.getId()) == null ? null
-                    : ts.attributes().get(MetricDimensions.PROCESS.getId()).toString();
-            String group = ts.attributes().get(MetricDimensions.METRIC_GROUP.getId()) == null ? null
-                    : ts.attributes().get(MetricDimensions.METRIC_GROUP.getId()).toString();
-            String ag = ts.attributes().get(MetricDimensions.AGGREGATION_LEVEL.getId()) == null ? null
-                    : ts.attributes().get(MetricDimensions.AGGREGATION_LEVEL.getId()).toString();
+            String host = ts.attributes().get(MetricDimension.HOST) == null ? null
+                    : ts.attributes().get(MetricDimension.HOST).toString();
+            String series = ts.attributes().get(MetricDimension.MEASUREMENT_SERIES) == null ? null
+                    : ts.attributes().get(MetricDimension.MEASUREMENT_SERIES).toString();
+            String process = ts.attributes().get(MetricDimension.PROCESS) == null ? null
+                    : ts.attributes().get(MetricDimension.PROCESS).toString();
+            String group = ts.attributes().get(MetricDimension.METRIC_GROUP) == null ? null
+                    : ts.attributes().get(MetricDimension.METRIC_GROUP).toString();
+            String ag = ts.attributes().get(MetricDimension.AGGREGATION_LEVEL) == null ? null
+                    : ts.attributes().get(MetricDimension.AGGREGATION_LEVEL).toString();
             //convert Point/MetricTimeSeries to MetricObservation
             return new MetricObservation(
                     ts.getMetric(),
@@ -241,7 +240,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * <p>
      * The DataFrame contains the following columns:
      * <ul>
-     * <li>for each dimension (@see: de.qaware.chronix.storage.solr.timeseries.metric.MetricDimensions) one column</li>
+     * <li>for each dimension (@see: de.qaware.chronix.storage.solr.timeseries.metric.MetricDimension) one column</li>
      * <li>one column for the observations' timestamp</li>
      * <li>one column for the measurement value at the observation timestamp</li>
      * </ul>
@@ -266,7 +265,6 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      *
      * @param sqlContext an open SQLContext
      * @return a Dataset of MetricObservations
-     * @deprecated
      */
     public Dataset<MetricObservation> toObservationsDataset(SQLContext sqlContext) {
         return sqlContext.createDataset(this.toObservations().rdd(), Encoders.bean(MetricObservation.class));

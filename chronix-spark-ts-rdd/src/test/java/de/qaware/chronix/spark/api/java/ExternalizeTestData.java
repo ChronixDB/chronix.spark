@@ -18,7 +18,7 @@ package de.qaware.chronix.spark.api.java;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
+import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -57,7 +57,8 @@ public class ExternalizeTestData {
         System.out.println("Opening test data file: " + filePath.toString());
 
         //Create Spark context
-        SparkConf conf = new SparkConf().setMaster(SparkTestConfiguration.SPARK_MASTER).setAppName(SparkTestConfiguration.APP_NAME);
+        SparkConf conf = new SparkConf().setMaster(SparkTestConfiguration.SPARK_MASTER_IN_PROCESS)
+                .setAppName(SparkTestConfiguration.APP_NAME);
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         //Create target file
@@ -68,8 +69,8 @@ public class ExternalizeTestData {
             //Read data into ChronixRDD
             SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY);
             ChronixRDD rdd = csc.queryChronixChunks(query,
-                    SparkTestConfiguration.ZK_HOST,
-                    SparkTestConfiguration.CHRONIX_COLLECTION,
+                    SparkTestConfiguration.ZK_HOST_LOCAL,
+                    SparkTestConfiguration.CHRONIX_COLLECTION_LOCAL,
                     new ChronixSolrCloudStorage(ChronixSolrCloudStorage.CHRONIX_DEFAULT_PAGESIZE));
             System.out.println("Writing " + rdd.count() + " time series into test data file.");
 

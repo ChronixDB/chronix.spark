@@ -16,7 +16,6 @@
 package de.qaware.chronix.storage.solr.timeseries.metric;
 
 import com.google.common.collect.Ordering;
-import de.qaware.chronix.timeseries.MetricTimeSeries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
