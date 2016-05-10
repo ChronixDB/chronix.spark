@@ -1,4 +1,4 @@
-= Setup a local Chronix Spark cluster within 5 minutes
+= Setup a local Chronix Spark cluster within 5 minutes on Mac OS X or Linux
 This document describes how to setup a local Chronix cluster. The cluster
 consists of a local Spark Cluster und a local Solr Cloud containing test data.
 
