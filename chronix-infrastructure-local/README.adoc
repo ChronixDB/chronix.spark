@@ -5,7 +5,7 @@ consists of a local Spark Cluster und a local Solr Cloud containing test data.
 == Prerequisites
  * Download and uncompress the software package directly into `chronix-infrastructure-local` directory.
  There should be the dirs `solr-cloud` and `spark` in this directory afterwards. The download URL is:
-https://storage.googleapis.com/chronix-spark/chronix-spark-0.3.tar.gz
+https://storage.googleapis.com/chronix-spark/chronix-local-pkg-0.3.tar.gz
  * `chmod 777` the `*.sh` files
 
 == Start the local cluster
