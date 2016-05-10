@@ -1,11 +1,11 @@
-= Local Chronix Cluster
+= Setup a local Chronix Spark cluster within 5 minutes
 This document describes how to setup a local Chronix cluster. The cluster
 consists of a local Spark Cluster und a local Solr Cloud containing test data.
 
 == Prerequisites
  * Download and uncompress the software package directly into `chronix-infrastructure-local` directory.
  There should be the dirs `solr-cloud` and `spark` in this directory afterwards. The download URL is:
-https://storage.googleapis.com/chronix-spark/chronix-local-pkg-0.3.tar.gz
+https://storage.googleapis.com/chronix-spark/chronix-local-pkg-0.3.tar.gz (do not add the download time to the 5mins ;-)
  * `chmod 777` the `*.sh` files
 
 == Start the local cluster
