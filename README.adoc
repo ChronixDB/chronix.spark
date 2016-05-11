@@ -8,6 +8,9 @@ image::logo.png[]
 = Chronix Spark
 An Apache Spark RDD implementation for time series processing - based on Chronix.
 
+== Usage Guide
+* link:chronix-infrastructure-local/README.adoc[Use Chronix Spark within 5mins (on Mac OSX or Linux)]
+
 == Design Principles
 * A `ChronixRDD` is a collection of univariate time series. Each of them has its own vector of timestamps - they are not aligned on one common vector of timestamps.
 * Time series are multi-dimensional. Each time series is associated to one or more dimensions. The identity of a time series is the combination of some of its dimension values.
