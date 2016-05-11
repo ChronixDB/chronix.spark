@@ -17,9 +17,7 @@ https://storage.googleapis.com/chronix-spark/chronix-spark-0.3.tar.gz
 
 After starting the cluster the following endpoints should be availabe:
 
- * Solr Cloud Node 1: http://localhost:8983/solr
- * Solr Cloud Node 2: http://localhost:7574/solr
- * Zookeeper: http://localhost:9983
+ * Solr Cloud: http://localhost:8983/solr
  * Spark Master Web UI: http://localhost:8988
  * (optional) Zeppelin Web UI: http://localhost:8991/#/
 

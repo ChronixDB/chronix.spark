@@ -15,12 +15,12 @@
  */
 package de.qaware.chronix.spark.api.java
 
-import de.qaware.chronix.spark.api.java.functions.FilterObservationByTimestamp
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimension
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries
 import org.apache.solr.client.solrj.SolrQuery
 import org.apache.spark.SparkConf
+import org.apache.spark.api.java.JavaDoubleRDD
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
@@ -114,6 +114,15 @@ class TestChronixRDD extends Specification {
         count > 0
     }
 
+    def "get values as rdd"() {
+        when:
+        JavaDoubleRDD rdd = rdd.getValuesAsRdd()
+        then:
+        double mean = rdd.mean();
+        println "Mean: " + mean
+        rdd.count() > 0
+    }
+
     def "test data frame"() {
         when:
         DataFrame df = rdd.toDataFrame(sqlContext);
@@ -135,13 +144,10 @@ class TestChronixRDD extends Specification {
     }
 
     def "test dataset"() {
-        given:
-        Dataset<MetricObservation> ds = rdd.toObservationsDataset(sqlContext);
         when:
-        Dataset<MetricObservation> filteredDs = ds.filter(
-                new FilterObservationByTimestamp(1458069519136L));
+        Dataset<MetricObservation> ds = rdd.toObservationsDataset(sqlContext);
         then:
-        assertTrue(filteredDs.count() > 0 && filteredDs.count() < ds.count());
+        assertTrue(ds.count() > 0);
     }
 
     def "test join"() {
