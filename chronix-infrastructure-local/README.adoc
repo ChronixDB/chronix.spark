@@ -12,6 +12,9 @@ https://storage.googleapis.com/chronix-spark/chronix-local-pkg-0.3.tar.gz (do no
  * Start Solr Cloud with `./startSolrCloud.sh`
  * Start Spark Cluster with `./startSparkCluster.sh`
  * (optional) Start Zeppelin with `./startZeppelin.sh`
+ * After that you've a running Chronix cluster with test data inside. You can use Zeppelin to perform data analysis. A Chronix Spark sample notebook can be found link:https://github.com/ChronixDB/chronix.spark/blob/master/chronix-infrastructure-local/Chronix%20Spark%20Samples.json[here]. Just import it into Zeppelin and play.
+ * If you want to import your own data set then you can use the link:https://github.com/ChronixDB/chronix.examples/tree/master/chronix-importer[Chronix Importer]
+ 
 
 == Endpoints
 
@@ -26,12 +29,6 @@ After starting the cluster the following endpoints should be availabe:
 == Cluster stats
  * Solr Cloud: 2 Nodes, 4 Shards, 8,707 time series, 76,983,735 observations (JMX & Unix metrics)
  * Spark Cluster: 1 Master, 1 Worker
-
-== Running the test cases against the cluster
- * Edit the class `SparkTestConfiguration`. Set the system property
- `CONFIG_PROFILE` to `Profile.LOCAL.name()`.
- * Perform a gradle `clean build`.
- * Run the tests (for example `TestChronixRDD`).
 
 == Shut down the local cluster
  * Stop Solr Cloud with `./stopSolrCloud.sh`
