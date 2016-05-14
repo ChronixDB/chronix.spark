@@ -269,5 +269,4 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
     public Dataset<MetricObservation> toObservationsDataset(SQLContext sqlContext) {
         return sqlContext.createDataset(this.toObservations().rdd(), Encoders.bean(MetricObservation.class));
     }
-
 }

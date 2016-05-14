@@ -17,6 +17,8 @@ package de.qaware.chronix.spark.api.java;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Output;
+import de.qaware.chronix.spark.api.java.config.ChronixSparkLoader;
+import de.qaware.chronix.spark.api.java.config.ChronixYAMLConfiguration;
 import de.qaware.chronix.storage.solr.ChronixSolrCloudStorage;
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
 import org.apache.commons.collections.IteratorUtils;
@@ -48,30 +50,32 @@ public class ExternalizeTestData {
      */
     public static void main(String[] args) throws SolrServerException, IOException {
 
-        String file = SparkTestConfiguration.DEFAULT_TESTDATA_FILE;
-        if (args.length >= 1) file = args[0];
+        ChronixSparkLoader chronixSparkLoader = new ChronixSparkLoader();
+        ChronixYAMLConfiguration config = chronixSparkLoader.getConfig();
+
+        String file = (args.length >= 1)
+                ? args[0]
+                : config.getTestdataFile();
 
         Path filePath = Paths.get(file);
         Files.deleteIfExists(filePath);
         Output output = new Output(new DeflaterOutputStream(new FileOutputStream(filePath.toString())));
         System.out.println("Opening test data file: " + filePath.toString());
-
-        //Create Spark context
-        SparkConf conf = new SparkConf().setMaster(SparkTestConfiguration.SPARK_MASTER_IN_PROCESS)
-                .setAppName(SparkTestConfiguration.APP_NAME);
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        
+        ChronixSparkContext cSparkContext = null;
 
         //Create target file
         try {
             //Create Chronix Spark context
-            ChronixSparkContext csc = new ChronixSparkContext(sc);
-
+            cSparkContext = chronixSparkLoader.createChronixSparkContext();
+            
             //Read data into ChronixRDD
-            SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY);
-            ChronixRDD rdd = csc.queryChronixChunks(query,
-                    SparkTestConfiguration.ZK_HOST_LOCAL,
-                    SparkTestConfiguration.CHRONIX_COLLECTION_LOCAL,
-                    new ChronixSolrCloudStorage(ChronixSolrCloudStorage.CHRONIX_DEFAULT_PAGESIZE));
+            SolrQuery query = new SolrQuery(config.getSolrReferenceQuery());
+            ChronixRDD rdd = cSparkContext.queryChronixChunks(query,
+                    config.getZookeeperHost(),
+                    config.getChronixCollection(),
+                    config.getStorage());
+
             System.out.println("Writing " + rdd.count() + " time series into test data file.");
 
             //Loop through result and serialize it to disk
@@ -83,7 +87,8 @@ public class ExternalizeTestData {
             System.out.println("Objects written.");
         } finally {
             output.close();
-            sc.close();
+            if(cSparkContext != null)
+                cSparkContext.getSparkContext().close();
             System.out.println("Test data file written successfully!");
         }
     }

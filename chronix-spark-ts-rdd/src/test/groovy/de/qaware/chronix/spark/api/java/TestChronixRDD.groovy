@@ -15,13 +15,11 @@
  */
 package de.qaware.chronix.spark.api.java
 
+import de.qaware.chronix.spark.api.java.config.ChronixSparkLoader
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimension
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries
-import org.apache.solr.client.solrj.SolrQuery
-import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaDoubleRDD
-import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SQLContext
@@ -33,24 +31,19 @@ import static org.junit.Assert.assertTrue
 class TestChronixRDD extends Specification {
 
     @Shared
-    SparkConf conf
-    @Shared
-    JavaSparkContext sc
+    ChronixSparkLoader loader
     @Shared
     ChronixSparkContext csc
-    @Shared
-    SolrQuery query
     @Shared
     ChronixRDD rdd
     @Shared
     SQLContext sqlContext
 
     def setup() {
-        sc = SparkTestConfiguration.createSparkContext();
-        csc = new ChronixSparkContext(sc);
-        sqlContext = new SQLContext(sc);
-        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY);
-        rdd = csc.query(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE);
+        loader = new ChronixSparkLoader();
+        csc = loader.createChronixSparkContext();
+        sqlContext = new SQLContext(csc.getSparkContext());
+        rdd = loader.createChronixRDD(csc);
     }
 
     def "test iterator"() {

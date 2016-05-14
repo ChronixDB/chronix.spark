@@ -15,11 +15,11 @@
  */
 package de.qaware.chronix.spark.api.java
 
+import de.qaware.chronix.spark.api.java.config.ChronixSparkLoader
+import de.qaware.chronix.spark.api.java.config.ChronixYAMLConfiguration
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeriesKey
 import org.apache.solr.client.solrj.SolrQuery
-import org.apache.spark.SparkConf
-import org.apache.spark.api.java.JavaSparkContext
 import org.junit.Assert
 import spock.lang.Shared
 import spock.lang.Specification
@@ -27,23 +27,23 @@ import spock.lang.Specification
 class TestChronixSparkContext extends Specification {
 
     @Shared
-    SparkConf conf
+    ChronixSparkLoader loader
     @Shared
-    JavaSparkContext sc
+    ChronixYAMLConfiguration config
     @Shared
     ChronixSparkContext csc
     @Shared
     SolrQuery query
 
     def setup() {
-        sc = SparkTestConfiguration.createSparkContext();
-        csc = new ChronixSparkContext(sc);
-        query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY)
+        loader = new ChronixSparkLoader();
+        config = loader.getConfig();
+        csc = loader.createChronixSparkContext();
     }
 
     def "testChronixQuery"() {
         when:
-        ChronixRDD result = csc.queryChronixChunks(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE)
+        ChronixRDD result = csc.queryChronixChunks(query, config.getZookeeperHost(), config.getChronixCollection(), config.getStorage())
         then:
         List<MetricTimeSeries> timeSeries = result.take(5)
 
@@ -56,8 +56,8 @@ class TestChronixSparkContext extends Specification {
 
     def "testQuery"() {
         when:
-        ChronixRDD resultChunked = csc.queryChronixChunks(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE)
-        ChronixRDD result = csc.query(query, SparkTestConfiguration.ZK_HOST, SparkTestConfiguration.CHRONIX_COLLECTION, SparkTestConfiguration.STORAGE)
+        ChronixRDD resultChunked = csc.queryChronixChunks(query, config.getZookeeperHost(), config.getChronixCollection(), config.getStorage())
+        ChronixRDD result = csc.query(query, config.getZookeeperHost(), config.getChronixCollection(), config.getStorage())
         then:
         long chunked = resultChunked.count()
         long joined = result.count()
