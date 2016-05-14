@@ -76,3 +76,9 @@ gradle-app.setting
 
 bintrayUpload.bat
 /.nb-gradle/
+
+# infrastructure-local files
+chronix-infrastructure-local/spark/
+chronix-infrastructure-local/solr-cloud/
+
+
