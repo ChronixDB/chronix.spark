@@ -60,9 +60,10 @@ public class ChronixSparkLoader {
         return chronixYAMLConfiguration;
     }
 
-    public ChronixSparkContext createChronixSparkContext() throws IOException{
-        if (chronixSparkContext != null)
+    public ChronixSparkContext createChronixSparkContext() throws IOException {
+        if (chronixSparkContext != null) {
             return chronixSparkContext;
+        }
 
         SparkConf sparkConf = new SparkConf()
                 .setMaster(chronixYAMLConfiguration.getSparkMaster())
@@ -71,7 +72,7 @@ public class ChronixSparkLoader {
         ChronixSparkContext.tuneSparkConf(sparkConf);
 
         //Set spark values given in yaml config
-        for(Map.Entry<String, String> setting : chronixYAMLConfiguration.getSparkSettings().entrySet()){
+        for (Map.Entry<String, String> setting : chronixYAMLConfiguration.getSparkSettings().entrySet()) {
             sparkConf.set(setting.getKey(), setting.getValue());
         }
 

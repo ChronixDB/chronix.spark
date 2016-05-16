@@ -73,8 +73,9 @@ public class ChronixYAMLConfiguration {
     }
 
     public ChronixSolrCloudStorage getStorage() {
-        if (getZookeeperHost().isEmpty())
+        if (getZookeeperHost().isEmpty()) {
             return new ChronixSolrCloudStorageMock(getTestdataFile());
+        }
         return new ChronixSolrCloudStorage();
     }
 

@@ -87,8 +87,9 @@ public class ExternalizeTestData {
             System.out.println("Objects written.");
         } finally {
             output.close();
-            if(cSparkContext != null)
+            if (cSparkContext != null) {
                 cSparkContext.getSparkContext().close();
+            }
             System.out.println("Test data file written successfully!");
         }
     }
