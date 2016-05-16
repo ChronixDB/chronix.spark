@@ -17,6 +17,7 @@ dependencies {
     testCompile 'org.apache.spark:spark-sql_2.10:1.6.1'
     //Kryo for test data storage (with included shaded asm - just to be sure)
     testCompile 'com.esotericsoftware:kryo-shaded:3.0.3'
+    testCompile 'org.yaml:snakeyaml:1.17'
 }
 
 task copyTestResources(type: Copy) {

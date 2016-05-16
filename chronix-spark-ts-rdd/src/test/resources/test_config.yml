@@ -1,0 +1,44 @@
+# profile to use
+profile:                  in_process
+
+# global config
+appName:                  YamlTest_In_Process
+solrReferenceQuery:       metric:"java.lang:type=Memory/HeapMemoryUsage/used"
+chronixCollection:        chronix
+
+# spark config settings
+sparkSettings:
+  {
+    'spark.driver.allowMultipleContexts'  : 'true',
+    'spark.eventLog.enabled'              : 'true',
+    'spark.eventLog.dir'                  : '/tmp'
+  }
+
+configurations:
+    ? in_process
+    : {
+        zookeeper:              '',
+        sparkMaster:            'local[4]',
+        testdataFile:           'timeseries-testdata.bin',
+        jars:
+          []
+      }
+    ? local
+    : {
+        zookeeper:              'localhost:9983',
+        sparkMaster:            'spark://localhost:8987',
+        testdataFile:           '',
+        jars:
+          [
+            'chronix-spark-ts-rdd/build/libs/chronix-spark-ts-rdd-0.3.jar'
+          ]
+      }
+    ? in_process_with_solr
+    : {
+        zookeeper:              'localhost:9983',
+        sparkMaster:            'local[4]',
+        testdataFile:           '',
+        jars:
+          []
+      }
+

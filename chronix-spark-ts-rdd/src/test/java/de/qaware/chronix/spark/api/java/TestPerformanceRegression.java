@@ -15,11 +15,10 @@
  */
 package de.qaware.chronix.spark.api.java;
 
+import de.qaware.chronix.spark.api.java.config.ChronixSparkLoader;
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation;
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.SQLContext;
 
@@ -35,51 +34,40 @@ public class TestPerformanceRegression {
     private static final long LOOPS = 4;
 
     public static void main(String[] args) throws SolrServerException, IOException {
-        //Create Spark context
-        JavaSparkContext sc = SparkTestConfiguration.createSparkContext();
 
-        try {
-            //Create Chronix Spark context
-            ChronixSparkContext csc = new ChronixSparkContext(sc);
+        ChronixSparkLoader loader = new ChronixSparkLoader();
 
-            //Create Spark SQL Context
-            SQLContext sqlContext = new SQLContext(sc);
+        ChronixSparkContext chronixSparkContext = loader.createChronixSparkContext();
+        SQLContext sqlContext = new SQLContext(chronixSparkContext.getSparkContext());
 
+        // BENCHMARK START ...............................
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < LOOPS; i++) {
 
-            // BENCHMARK START ...............................
-            long start = System.currentTimeMillis();
-            for (int i = 0; i < LOOPS; i++) {
+            //Load data into ChronixRDD
+            ChronixRDD rdd = loader.createChronixRDD(chronixSparkContext);
 
-                //Read data into ChronixRDD
-                SolrQuery query = new SolrQuery(SparkTestConfiguration.SOLR_REFERENCE_QUERY);
-                ChronixRDD rdd = csc.query(query,
-                        SparkTestConfiguration.ZK_HOST,
-                        SparkTestConfiguration.CHRONIX_COLLECTION,
-                        SparkTestConfiguration.STORAGE);
-
-                //Some actions
-                double mean = rdd.mean();
-                double approxMean = rdd.approxMean();
-                long observationCount = rdd.countObservations();
-                double max = rdd.max();
-                double min = rdd.min();
-                Iterator<MetricTimeSeries> it = rdd.iterator();
-                while (it.hasNext()) {
-                    MetricTimeSeries mts = it.next();
-                    System.out.print(".");
-                }
-
-                //DataFrame operations
-                Dataset<MetricObservation> ds = rdd.toObservationsDataset(sqlContext);
-                ds.count();
+            //Some actions
+            double mean = rdd.mean();
+            double approxMean = rdd.approxMean();
+            long observationCount = rdd.countObservations();
+            double max = rdd.max();
+            double min = rdd.min();
+            Iterator<MetricTimeSeries> it = rdd.iterator();
+            while (it.hasNext()) {
+                MetricTimeSeries mts = it.next();
+                System.out.print(".");
             }
-            long stop = System.currentTimeMillis();
-            // BENCHMARK STOP ...................................
-            System.out.println("\nBenchmark duration: " + (stop - start) + " ms");
-        } finally {
-            //Clean up
-            sc.close();
+
+            //DataFrame operations
+            Dataset<MetricObservation> ds = rdd.toObservationsDataset(sqlContext);
+            ds.count();
         }
+        long stop = System.currentTimeMillis();
+        // BENCHMARK STOP ...................................
+        System.out.println("\nBenchmark duration: " + (stop - start) + " ms");
+
+        chronixSparkContext.getSparkContext().close();
     }
 
 }
