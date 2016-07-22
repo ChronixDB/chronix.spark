@@ -25,7 +25,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.DoubleFunction;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.SQLContext;
@@ -193,7 +193,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @return a RDD with all observation values
      */
     public JavaDoubleRDD getValuesAsRdd() {
-        return this.flatMapToDouble(mts -> Arrays.asList(ArrayUtils.toObject(mts.getValuesAsArray())));
+        return this.flatMapToDouble(mts -> Arrays.asList(ArrayUtils.toObject(mts.getValuesAsArray())).iterator());
     }
 
     /**
@@ -232,7 +232,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
                     point.getTimestamp(),
                     point.getValue()
             );
-        })::iterator);
+        }).iterator());
     }
 
     /**
@@ -248,7 +248,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @param sqlContext an open SQLContext
      * @return a DataFrame containing the ChronixRDD data
      */
-    public DataFrame toDataFrame(SQLContext sqlContext) {
+    public Dataset toDataFrame(SQLContext sqlContext) {
         return sqlContext.createDataFrame(
                 this.toObservations(),
                 MetricObservation.class

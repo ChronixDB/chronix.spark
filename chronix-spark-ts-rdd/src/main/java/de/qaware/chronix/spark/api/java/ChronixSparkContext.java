@@ -96,7 +96,7 @@ public class ChronixSparkContext implements Serializable {
         // parallelize the requests to the shards
         JavaRDD<MetricTimeSeries> docs = jsc.parallelize(shards, shards.size()).flatMap(
                 (FlatMapFunction<String, MetricTimeSeries>) shardUrl -> chronixStorage.streamFromSingleNode(
-                        zkHost, collection, shardUrl, query, new MetricTimeSeriesConverter())::iterator);
+                        zkHost, collection, shardUrl, query, new MetricTimeSeriesConverter()).iterator());
         return new ChronixRDD(docs);
     }
 
