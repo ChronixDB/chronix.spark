@@ -20,7 +20,6 @@ import de.qaware.chronix.storage.solr.timeseries.metric.MetricDimension
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricObservation
 import de.qaware.chronix.storage.solr.timeseries.metric.MetricTimeSeries
 import org.apache.spark.api.java.JavaDoubleRDD
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SQLContext
 import spock.lang.Shared
@@ -118,7 +117,7 @@ class TestChronixRDD extends Specification {
 
     def "test data frame"() {
         when:
-        DataFrame df = rdd.toDataFrame(sqlContext);
+        Dataset df = rdd.toDataFrame(sqlContext);
         then:
         //Assert that all columns are available
         List<String> columns = Arrays.asList(df.columns());
@@ -131,7 +130,7 @@ class TestChronixRDD extends Specification {
         df.show()
         assertTrue(df.count() > 0);
 
-        DataFrame dfRes = df.select("value", "process").where("process=\"jenkins-jolokia\"")
+        Dataset dfRes = df.select("value", "process").where("process=\"jenkins-jolokia\"")
         dfRes.show()
         assertTrue(dfRes.count() > 0)
     }
