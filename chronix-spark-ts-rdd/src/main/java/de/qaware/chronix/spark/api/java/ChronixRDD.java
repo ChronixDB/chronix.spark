@@ -26,8 +26,8 @@ import org.apache.spark.api.java.function.DoubleFunction;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import scala.Tuple2;
 import scala.reflect.ClassTag;
@@ -248,7 +248,7 @@ public class ChronixRDD extends JavaRDD<MetricTimeSeries> {
      * @param sqlContext an open SQLContext
      * @return a DataFrame containing the ChronixRDD data
      */
-    public Dataset toDataFrame(SQLContext sqlContext) {
+    public Dataset<Row> toDataFrame(SQLContext sqlContext) {
         return sqlContext.createDataFrame(
                 this.toObservations(),
                 MetricObservation.class

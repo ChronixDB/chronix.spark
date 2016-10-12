@@ -4,20 +4,30 @@ sonarqube {
     }
 }
 
+ext {
+    sparkVersion = '2.0.1' //2.0.1 - 1.6.2
+    //solrSparkVersion = '2.2.1' //2.2.1
+    solrJVersion = '5.4.1' //5.4.1
+    scalaVersion = '2.11' //2.11
+}
+
 dependencies {
-    compile 'org.apache.solr:solr-solrj:5.4.1'
-    compile project(':chronix-solr-cloud-storage')
-    compile 'org.apache.commons:commons-math3:3.6.1'
+    compile "org.apache.solr:solr-solrj:$solrJVersion"
+    compile project(":chronix-solr-cloud-storage")
+    compile "org.apache.commons:commons-math3:3.6.1"
 
     //Spark dependencies. compileOnly & testCompile because they
     //are provided by Zeppelin et al.
-    compileOnly 'org.apache.spark:spark-core_2.11:2.0.0'
-    compileOnly 'org.apache.spark:spark-sql_2.11:2.0.0'
-    testCompile 'org.apache.spark:spark-core_2.11:2.0.0'
-    testCompile 'org.apache.spark:spark-sql_2.11:2.0.0'
+    compileOnly "org.apache.spark:spark-core_$scalaVersion:$sparkVersion"
+    compileOnly "org.apache.spark:spark-sql_$scalaVersion:$sparkVersion"
+    //compileOnly "com.lucidworks.spark:spark-solr:$solrSparkVersion"
+    testCompile "org.apache.spark:spark-core_$scalaVersion:$sparkVersion"
+    testCompile "org.apache.spark:spark-sql_$scalaVersion:$sparkVersion"
+    //testCompile "com.lucidworks.spark:spark-solr:$solrSparkVersion"
+
     //Kryo for test data storage (with included shaded asm - just to be sure)
-    testCompile 'com.esotericsoftware:kryo-shaded:3.0.3'
-    testCompile 'org.yaml:snakeyaml:1.17'
+    testCompile "com.esotericsoftware:kryo-shaded:3.0.3"
+    testCompile "org.yaml:snakeyaml:1.17"
 }
 
 task copyTestResources(type: Copy) {
